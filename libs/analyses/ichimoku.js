@@ -31,103 +31,92 @@ setTimeout(async () => {
 }, 300)
 
 
-exports.checkAlarmNew = () => {
-    Ichimoku.find().then(alarms => {
-        alarms.forEach(async (alarm, index) => {
-            // if(global.saveKline){
-                let { symbol, element, condition, interval, _id, type, buffer } = await alarm
-                if(!buffer){
-                    buffer = 0;
+exports.checkAlarmNew = async  () => {
+    let alarms = await Ichimoku.find().lean()
+    alarms.forEach(async (alarm, index) => {
+        let { symbol, element, condition, interval, _id, type, buffer } = await alarm
+        console.log(alarm)
+        if(!buffer){
+            buffer = 0;
+        }
+        let { lastPrice } = await bybit.getLastPrice(symbol)
+        let { maxLeverage } = await bybit.getIncrements(symbol)
+        let params = await this.getLastParam(symbol, timeframes[interval], 120)
+        let elementPrice = params[element]
+        if(condition == "below"){
+            if(smallerEq(parseFloat(lastPrice), add(parseFloat(elementPrice), divide(multiply(parseFloat(buffer), parseFloat(elementPrice)), 100)))){
+                await Ichimoku.findByIdAndDelete(_id)
+                let positionInfo = await kline.calculatePositionParameters(symbol, "buy")
+                let { callbackRate, stopLossStopPrice, stopLossLimitPrice, activationPrice, highPercent, lowPercent, longR2R, shortR2R } = positionInfo
+                console.log(`${symbol} is ${condition} ${element} ${timeframes[interval]} price: ${lastPrice} buffer: ${buffer} ${type}\n stop:${stopLossStopPrice}, limit: ${stopLossLimitPrice}, activationPrice: ${activationPrice} callbackRate: ${callbackRate} low: ${lowPercent} shortR2R: ${longR2R}`)
+                leverage = Math.ceil(divide(lossPercentage, callbackRate)) * 4;
+                if(largerEq(leverage, maxLeverage)){
+                    leverage = maxLeverage;
                 }
-                bybit.getLastPrice(symbol).then(( { lastPrice } ) => {
-                    bybit.getIncrements(symbol).then(({ maxLeverage }) => {
-                        this.getLastParam(symbol, timeframes[interval], 120).then((params) => {
-                            let elementPrice = params[element]
-                            if(global.shouldTrade){
-                                if(condition == "below"){
-                                    if(smallerEq(parseFloat(lastPrice), add(parseFloat(elementPrice), divide(multiply(parseFloat(buffer), parseFloat(elementPrice)), 100)))){
-                                        Ichimoku.findByIdAndDelete(_id).then(() => {
-                                            kline.calculatePositionParameters(symbol, "buy").then((positionInfo) => {
-                                                let { callbackRate, stopLossStopPrice, stopLossLimitPrice, activationPrice, highPercent, lowPercent, longR2R, shortR2R } = positionInfo
-                                                console.log(`${symbol} is ${condition} ${element} ${timeframes[interval]} price: ${lastPrice} buffer: ${buffer} ${type}\n stop:${stopLossStopPrice}, limit: ${stopLossLimitPrice}, activationPrice: ${activationPrice} callbackRate: ${callbackRate} low: ${lowPercent} shortR2R: ${longR2R}`)
-                                                leverage = Math.ceil(divide(lossPercentage, callbackRate)) * 4;
-                                                if(largerEq(leverage, maxLeverage)){
-                                                    leverage = maxLeverage;
-                                                }
-                                                if(type != "manual"){
-                                                    telegram.sendSignal(symbol, "buy", lastPrice, stopLossStopPrice, stopLossLimitPrice, activationPrice, callbackRate, longR2R, shortR2R, buffer, leverage, activationPrice)
-                                                    // buy request
-                                                    // console.log("is signal")
-                                                    // assist.sendMessage("09119100991", `${symbol} position started !`)
-                                                    // assist.makeCall("09119100991");
-                                                    // let { qty } = await kline.getQty(symbol, positionMargin, leverage)
-                                                    // console.log(qty)
-                                                    // await bybit.setLeverage(symbol, leverage)
-                                                    // await bybit.marketBuy(symbol, qty, activationPrice)
-                                                    // setTimeout(async () => {
-                                                        // await bybit.setTrailingStop(symbol, "Buy", callbackRate)
-                                                    // }, 1000)
-                                                }else{
-                                                //     console.log("not signal")
-                                                    telegram.sendAdminMessage(JSON.stringify({ symbol, element, condition, interval, buffer, _id, type }))
-                                                }
-                                                // await Position.create({ side: "buy", symbol, entry: lastPrice, stop: stopLossStopPrice, limit: stopLossLimitPrice, activation: activationPrice, callbackRate })
-                                            })
-                                        })                                   
-                                    }
-                                }else if(condition == "above"){
-                                    if(largerEq(parseFloat(lastPrice), subtract(parseFloat(elementPrice), divide(multiply(parseFloat(buffer), parseFloat(elementPrice)), 100)))){
-                                       Ichimoku.findByIdAndDelete(_id).then(() => {
-                                           kline.calculatePositionParameters(symbol, "sell").then((positionInfo) => {
-                                               let { callbackRate, stopLossStopPrice, stopLossLimitPrice, activationPrice, highPercent, lowPercent, longR2R, shortR2R } = positionInfo
-                                               leverage = Math.ceil(divide(lossPercentage, callbackRate)) * 4;
-                                               if(largerEq(leverage, maxLeverage)){
-                                                   leverage = maxLeverage;
-                                               }
-                                               console.log(`${symbol} is ${condition} ${element} ${timeframes[interval]} price: ${lastPrice} buffer: ${buffer} ${type}\n stop:${stopLossStopPrice}, limit: ${stopLossLimitPrice}, activationPrice: ${activationPrice} callbackRate: ${callbackRate} low: ${lowPercent} shortR2R: ${shortR2R}`)
-                                               if(type != "manual"){
-                                                   telegram.sendSignal(symbol, "sell", lastPrice, stopLossStopPrice, stopLossLimitPrice, activationPrice, callbackRate, longR2R, shortR2R, buffer, leverage, activationPrice)
-                                                   //sell request
-                                                   // console.log("is signal")
-                                                   // assist.sendMessage("09119100991", `${symbol} position started !`)
-                                                   // assist.makeCall("09119100991");
-                                                   // let { qty } = await kline.getQty(symbol, positionMargin, leverage)
-                                                   // console.log(qty)
-                                                   // await bybit.setLeverage(symbol, leverage)
-                                                   // await bybit.marketSell(symbol, qty, activationPrice)
-                                                   // setTimeout(async () => {
-                                                       // await bybit.setTrailingStop(symbol, "Sell", callbackRate)
-                                                   // }, 1000)
-                                               }else{
-                                               //     console.log("not signal")
-                                                   telegram.sendAdminMessage(JSON.stringify({ symbol, element, condition, interval, buffer, _id, type }))
-                                               }
-                                               // await Position.create({ side: "sell", symbol, entry: lastPrice, stop: stopLossStopPrice, limit: stopLossLimitPrice, activation: activationPrice, callbackRate })                                           
-                                           })
-                                       })
-                                    }
-                                }else{
-                                    console.log("nothing to do from alarm file")
-                                }
-                            }  
-                        })
-                    })
-                })             
-            // }
-            if(index == alarms.length - 1){
-                setTimeout(() => {
-                    // if(global.shouldTrade)
-                        console.log("dynamic")
-                    this.checkAlarmNew();
-                }, 300)
+                if(type != "manual"){
+                    telegram.sendSignal(symbol, "buy", lastPrice, stopLossStopPrice, stopLossLimitPrice, activationPrice, callbackRate, longR2R, shortR2R, buffer, leverage, activationPrice)
+                    // buy request
+                    // console.log("is signal")
+                    // assist.sendMessage("09119100991", `${symbol} position started !`)
+                    // assist.makeCall("09119100991");
+                    // let { qty } = await kline.getQty(symbol, positionMargin, leverage)
+                    // console.log(qty)
+                    // await bybit.setLeverage(symbol, leverage)
+                    // await bybit.marketBuy(symbol, qty, activationPrice)
+                    // setTimeout(async () => {
+                        // await bybit.setTrailingStop(symbol, "Buy", callbackRate)
+                    // }, 1000)
+                }else{
+                //     console.log("not signal")
+                    telegram.sendAdminMessage(JSON.stringify({ symbol, element, condition, interval, buffer, _id, type }))
+                }
+                // await Position.create({ side: "buy", symbol, entry: lastPrice, stop: stopLossStopPrice, limit: stopLossLimitPrice, activation: activationPrice, callbackRate })                                                           
             }
-        })     
-    })
+        }else if(condition == "above"){
+            if(largerEq(parseFloat(lastPrice), subtract(parseFloat(elementPrice), divide(multiply(parseFloat(buffer), parseFloat(elementPrice)), 100)))){
+                await Ichimoku.findByIdAndDelete(_id)
+                let positionInfo = await kline.calculatePositionParameters(symbol, "sell")
+                let { callbackRate, stopLossStopPrice, stopLossLimitPrice, activationPrice, highPercent, lowPercent, longR2R, shortR2R } = positionInfo
+                leverage = Math.ceil(divide(lossPercentage, callbackRate)) * 4;
+                if(largerEq(leverage, maxLeverage)){
+                    leverage = maxLeverage;
+                }
+                console.log(`${symbol} is ${condition} ${element} ${timeframes[interval]} price: ${lastPrice} buffer: ${buffer} ${type}\n stop:${stopLossStopPrice}, limit: ${stopLossLimitPrice}, activationPrice: ${activationPrice} callbackRate: ${callbackRate} low: ${lowPercent} shortR2R: ${shortR2R}`)
+                if(type != "manual"){
+                    telegram.sendSignal(symbol, "sell", lastPrice, stopLossStopPrice, stopLossLimitPrice, activationPrice, callbackRate, longR2R, shortR2R, buffer, leverage, activationPrice)
+                    //sell request
+                    // console.log("is signal")
+                    // assist.sendMessage("09119100991", `${symbol} position started !`)
+                    // assist.makeCall("09119100991");
+                    // let { qty } = await kline.getQty(symbol, positionMargin, leverage)
+                    // console.log(qty)
+                    // await bybit.setLeverage(symbol, leverage)
+                    // await bybit.marketSell(symbol, qty, activationPrice)
+                    // setTimeout(async () => {
+                        // await bybit.setTrailingStop(symbol, "Sell", callbackRate)
+                    // }, 1000)
+                }else{
+                //     console.log("not signal")
+                    telegram.sendAdminMessage(JSON.stringify({ symbol, element, condition, interval, buffer, _id, type }))
+                }
+                // await Position.create({ side: "sell", symbol, entry: lastPrice, stop: stopLossStopPrice, limit: stopLossLimitPrice, activation: activationPrice, callbackRate })                                           
+            }
+        }else{
+            console.log("nothing to do from alarm file")
+        }                    
+        if(index == alarms.length - 1){
+            setTimeout(() => {
+                // console.log("dynamic")
+                this.checkAlarmNew();
+            }, 300)
+        }
+    })     
+    
 }
 
 
 setTimeout(() => {
-    // this.checkAlarmNew();
+    this.checkAlarmNew();
 }, 3100)
 
 

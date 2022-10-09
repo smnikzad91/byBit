@@ -8,84 +8,76 @@ const kline        = require('./../libs/analyses/kline')
 const Setting      = require('./../models/Setting')
 const {multiply, divide, format, pow, subtract, log, add, largerEq, smallerEq, smaller, fraction} = require('mathjs');
 
-exports.checkAlarm = () => {
-    Alarm.find({ }, (err, alarms) => {
-        let alarmsLength = alarms.length;
-        alarms.forEach(async (alarm, index) => {
-            // if(global.shouldTrade){
-                let { symbol, price, condition, _id, isEnabled, shouldCall, shouldMessage, type } = await alarm
-                bybit.getLastPrice(symbol).then(({lastPrice}) => {
-                    if(condition === "below"){
-                        if(parseFloat(lastPrice) <= parseFloat(price)){
-                            Alarm.findByIdAndDelete(_id, () => {
-                                AlarmHistory.create({ symbol, condition, price, isEnabled, shouldCall, shouldMessage, type  }, () => {
-                                    if(type === "manual"){
-                                        console.log(`${symbol} is ${condition} ${price} type: manual`)
-                                        telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: ${type}`)
-                                    }else if(type === "static"){
-                                        console.log(`${symbol} is ${condition} ${price} type: ${type}`)
-                                        telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: static`)
-                                        Ichimoku.find({ symbol }, (err, result) => {
-                                            if(!result.length){
-                                                let interval;
-                                                if(type == "static"){
-                                                    interval = "long"
-                                                }else if(type == "dynamic"){
-                                                    interval = "short"
-                                                }
-                                                kline.getBuffer(symbol).then(( { buffer } ) => {
-                                                    Ichimoku.create({ symbol, condition: "above", element: "tenkansen", interval, type, buffer })
-                                                })
-                                            }
-                                        })
-                                    }
-                                })
+exports.checkAlarm = async () => {
+    let alarms = await Alarm.find().lean()
+    let alarmsLength = alarms.length;
+    alarms.forEach(async (alarm, index) => {
+        let { symbol, price, condition, _id, isEnabled, shouldCall, shouldMessage, type } = await alarm
+        console.log(alarm)
+        let {lastPrice} = await bybit.getLastPrice(symbol)
+        if(condition === "below"){
+            if(parseFloat(lastPrice) <= parseFloat(price)){
+                await Alarm.findByIdAndDelete(_id)
+                await AlarmHistory.create({ symbol, condition, price, isEnabled, shouldCall, shouldMessage, type  })
+                if(type === "manual"){
+                    console.log(`${symbol} is ${condition} ${price} type: manual`)
+                    telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: ${type}`)
+                }else if(type === "static"){
+                    console.log(`${symbol} is ${condition} ${price} type: ${type}`)
+                    telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: static`)
+                    Ichimoku.find({ symbol }, (err, result) => {
+                        if(!result.length){
+                            let interval;
+                            if(type == "static"){
+                                interval = "long"
+                            }else if(type == "dynamic"){
+                                interval = "short"
+                            }
+                            kline.getBuffer(symbol).then(( { buffer } ) => {
+                                Ichimoku.create({ symbol, condition: "above", element: "tenkansen", interval, type, buffer })
                             })
                         }
-                    }else if(condition === "above"){
-                        if(largerEq(parseFloat(lastPrice) , parseFloat(price))){
-                            Alarm.findByIdAndDelete(_id, () => {
-                                AlarmHistory.create({ symbol, condition, price, shouldCall, shouldMessage, type }, () => {
-                                    if(type == "manual"){
-                                        console.log(`${symbol} is ${condition} ${price} type: ${type}`)
-                                        telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: ${type}`)
-                                    }else if( type == "static" ){
-                                        console.log(`${symbol} is ${condition} ${price} type: ${type}`)
-                                        telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: ${type}`)
-                                        Ichimoku.find({ symbol }, (err, result) => {
-                                            if(!result.length){
-                                                let interval;
-                                                if(type == "static"){
-                                                    interval = "long"
-                                                }else if(type == "dynamic"){
-                                                    interval = "short"
-                                                }
-                                                kline.getBuffer(symbol).then(( { buffer } ) => {
-                                                    Ichimoku.create({ symbol, condition: "below", element: "tenkansen", interval, type, buffer })
-                                                })
-                                            }
-                                        })
-                                    }
-                                })
-                            })
-                        }
-                    }
-                })
-            // }
-            if(index == alarmsLength - 1){                
-                setTimeout(() => {
-                    // if(global.shouldTrade)
-                        console.log("static")
-                    this.checkAlarm();
-                }, 300)
+                    })
+                }                           
             }
-        })
+        }else if(condition === "above"){
+            if(largerEq(parseFloat(lastPrice) , parseFloat(price))){
+                await Alarm.findByIdAndDelete(_id)
+                await AlarmHistory.create({ symbol, condition, price, shouldCall, shouldMessage, type })
+                if(type == "manual"){
+                    console.log(`${symbol} is ${condition} ${price} type: ${type}`)
+                    telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: ${type}`)
+                }else if( type == "static" ){
+                    console.log(`${symbol} is ${condition} ${price} type: ${type}`)
+                    telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: ${type}`)
+                    Ichimoku.find({ symbol }, (err, result) => {
+                        if(!result.length){
+                            let interval;
+                            if(type == "static"){
+                                interval = "long"
+                            }else if(type == "dynamic"){
+                                interval = "short"
+                            }
+                            kline.getBuffer(symbol).then(( { buffer } ) => {
+                                Ichimoku.create({ symbol, condition: "below", element: "tenkansen", interval, type, buffer })
+                            })
+                        }
+                    })
+                }                           
+            }
+        }
+        if(index == alarmsLength - 1){                
+            setTimeout(() => {
+                // console.log("static")
+                this.checkAlarm();
+            }, 300)
+        }
     })
 }
 
 setTimeout(() => {
     global.shouldTrade = true;
-    // this.checkAlarm();
+    this.checkAlarm();
 }, 3000)
 
 

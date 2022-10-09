@@ -255,7 +255,7 @@ exports.getLocalKlines = async (symbol, period, count) => {
             tArray.push(turnover)
         }catch(err){
             // console.log(`add : ${symbol}  ${period}   ${time}`)
-            console.log(key)
+            // console.log(key)
 
             // this.addMissingKline(symbol, period, time)
             // console.log(startTime)

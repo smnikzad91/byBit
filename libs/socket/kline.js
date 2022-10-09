@@ -19,8 +19,8 @@ const {multiply, divide, format, pow, subtract, log, add, largerEq, smallerEq, s
 var client = new WebSocket(endpoint);
 let interval;
 client.on('open', async function () {
-    // let [{timeframes}] = await Setting.find().select(['-_id']);
-    // interval = timeframes
+    let [{timeframes}] = await Setting.find().select(['-_id']);
+    interval = timeframes
 	console.log('Connected To Kline Socket Server');
 	setInterval(()=>{client.ping()}, 30000);
 	client.ping();
@@ -63,7 +63,7 @@ client.on('message', async function (e) {
             // }else{
             //     ex = 60 * period * count;
             // }
-            let result = redisClient.set(key, JSON.stringify( { symbol, period, start, end, open, close, high, low, volume, turnover, confirm, cross_seq } ));
+            let result = await redisClient.set(key, JSON.stringify( { symbol, period, start, end, open, close, high, low, volume, turnover, confirm, cross_seq } ));
             // let result = await Kline.findOne({symbol, start, period})
             // if(result != null){
                 
