@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ./../partials/user/styles %>
+    <title>Alarms</title>
+</head>
+<body>
+    
+    <hr class="bg-secondary border-3 border-top border-secondary">
+    <div class="container-fluid">
+        <form method="post" action="/alarms/new">
+            <div class="row m-4">
+                <div class="col-xl-1">
+                    <label for="symbol">Alarm symbol: </label>
+                    <input type="text" class="form-control" name="symbol" id="symbol" placeholder="Symbol">
+                </div>
+
+                <div class="col-xl-1">
+                    <label for="type">Alarm Type: </label>
+                    <select onChange="handleAlarmType();" class="form-control" name="alarmType" id="alarmType">
+                        <option value="static">Static</option>
+                        <option value="ichimoku">Ichimoku</option>
+                    </select>
+                </div>
+
+                <div class="col-xl-1">
+                    <label for="condition">Condition: </label>
+                    <select class="form-control" name="condition" id="condition">
+                        <option value="below">Price below</option>
+                        <option value="above">Price above</option>
+                    </select>
+                </div>
+
+                <div class="col-xl-1 d-blok" id="staticPanel">
+                    <label for="price">price: </label>
+                    <input type="text" class="form-control" name="price" id="price" placeholder="Price">
+                </div>
+
+                <div class="col-xl-1 d-none" id="ichimokuPanel">
+                    <label for="ichimokuElement">Element: </label>
+                    <select class="form-control" name="ichimokuElement" id="ichimokuElement">
+                        <option value="tenkansen">Tenkansen</option>
+                        <option value="kijunsen">Kijunsen</option>
+                        <option value="senkouA">Senkou A</option>
+                        <option value="senkouB">Senkou B</option>
+                    </select>
+                </div>
+
+                <div class="col-xl-1 d-none" id="ichimokuPanel">
+                    <label for="timeframe">Timeframe: </label>
+                    <select class="form-control" name="timeframe" id="timeframe">
+                        <option value="short">Short</option>
+                        <option value="trade">Trade</option>
+                        <option value="long">Long</option>
+                    </select>
+                </div>
+
+
+                <div class="col-xl-1">
+                    <label for="shouldCall">Should Call: </label>
+                    <select class="form-control" name="shouldCall" id="shouldCall">
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
+                    </select>
+                </div>
+
+
+                <div class="col-xl-1">
+                    <label for="shouldMessage">Should Message: </label>
+                    <select class="form-control" name="shouldMessage" id="shouldMessage">
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
+                    </select>
+                </div>
+
+    
+
+    
+                <div class="col-xl-1">
+                    <button type="submit" id="addNew" class="btn  btn-primary mt-4" onclick='return confirm("Are you sure")'>Add Alarm</button>
+                </div>
+                <div class="offset-xl-3 col-xl-1">
+                    <a href="/alarms/delete/static/all" class="btn btn-danger mt-4" onclick='return confirm("Are you sure")'>Delete All</a>
+                </div>
+            </div>
+        </div>    
+        </form>
+        
+    <hr class="bg-secondary border-3 border-top border-secondary">
+
+
+
+
+    <div class="container">
+        <ul class="nav nav-tabs " id="myTab" role="tablist">
+            <li class="nav-item bg-dark" role="presentation">
+              <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#staticAlarms" type="button" role="tab" aria-controls="staticAlarms" aria-selected="true">Static Alarms</button>
+            </li>
+            <li class="nav-item bg-dark" role="presentation">
+              <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#ichimokuAlarms" type="button" role="tab" aria-controls="ichimokuAlarms" aria-selected="false">Ichimoku Alarms</button>
+            </li>
+          </ul>
+          <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="staticAlarms" role="tabpanel" aria-labelledby="static-alarms-tab">
+                <% if(alarms.length != 0){ %>
+                    <div class="table-responsive container">
+                        <table id="myTable" class="table table-sm table-hover table-dark mt-2 text-center">
+                            <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Symbol</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Condition</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">isEnabled</th>
+                                <th scope="col">shouldMessage</th>
+                                <th scope="col">shouldCall</th>
+                                <th scope="col">Operation</th>
+                            </tr>
+                            </thead>
+                            <tbody class="">
+                                <% alarms.forEach((alarm, index) => { %>
+                                    <tr>
+                                        <th><%= ++index %></th>
+                                        <td><%= alarm.symbol %></td>
+                                        <td><%= alarm.type %></td>
+                                        <% if(alarm.condition === "below"){ %>
+                                            <td><<</td>
+                                        <% }else{ %>
+                                            <td>>></td>
+                                            <% } %>
+                                        <td><%= alarm.price %></td>
+                
+                
+                                        <% if(alarm.isEnabled){ %>
+                                            <td class="text-success"><%= alarm.isEnabled %></td>
+                                        <% }else{ %>
+                                            <td class="text-danger"><%= alarm.isEnabled %></td>
+                                        <% } %>
+                
+
+                
+                                        <% if(alarm.shouldMessage){ %>
+                                            <td class="text-success"><%= alarm.shouldMessage %></td>
+                                        <% }else{ %>
+                                            <td class="text-danger"><%= alarm.shouldMessage %></td>
+                                        <% } %>
+                
+                                        <% if(alarm.shouldCall){ %>
+                                            <td class="text-success"><%= alarm.shouldCall %></td>
+                                        <% }else{ %>
+                                            <td class="text-danger"><%= alarm.shouldCall %></td>
+                                        <% } %>
+                
+                
+                                            <td>
+                                                <div class="">
+                                                    <% if(alarm.isEnabled){ %>
+                                                    <a href="/alarms/deactive/<%= alarm._id %>" class="btn btn-sm btn-secondary" onclick="return confirm('Are you sure?')">Deactive</a>
+                                                    <% }else{ %>
+                                                    <a href="/alarms/active/<%= alarm._id %>" class="btn btn-sm btn-success" onclick="return confirm('Are you sure?')">Active</a>
+                                                    <% } %>
+                                                    <a class="btn btn-sm btn-danger" href="/alarms/delete/static/<%= alarm._id %>" onclick="return confirm('Are you sure?')">Delete</a>
+                                                </div>
+                                            </td>
+                      
+                                    </tr>
+                
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>                    
+                    <% }else{ %>                        
+                        <h2 class="text-danger text-center">No Open Order!</h2>
+                    <% } %>    
+            </div>
+            <div class="tab-pane fade" id="ichimokuAlarms" role="tabpanel" aria-labelledby="ichimoku-alams-tab">
+                <% if(ichimokus.length != 0){ %>
+                    <div class="table-responsive container">
+                        <table id="" class="table table-sm table-hover table-dark mt-2 text-center">
+                            <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Symbol</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Condition</th>
+                                <th scope="col">Buffer</th>
+                                <th scope="col">Element</th>
+                                <th scope="col">Interval</th>
+                                <th scope="col">Operation</th>
+    
+                            </tr>
+                            </thead>
+                            <tbody class="">
+                            <% ichimokus.forEach((alarm, index) => { %>
+                                <tr>
+                                    <th><%= ++index %></th>
+                                    <td><%= alarm.symbol %></td>
+                                    <td><%= alarm.type %></td>
+                                    <% if(alarm.condition === "below"){ %>
+                                        <td><<</td>
+                                    <% }else{ %>
+                                        <td>>></td>
+                                        <% } %>
+                                    <td><%= alarm.buffer %></td>
+                                    <td><%= alarm.element %></td>
+                                    <td><%= timeframes[alarm.interval] %></td>
+    
+    
+                                    <td>
+                                        <div class="">
+                                            <a class="btn btn-sm btn-danger" href="/alarms/delete/ichimoku/<%= alarm._id %>" onclick="return confirm('Are you sure?')">Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                  
+                            <% }) %>
+                            </tbody>
+                        </table>
+                    </div>                   
+                    <% }else{ %>                        
+                        <h2 class="text-danger text-center">No Ichimoku Alarm Found!</h2>
+                    <% } %>
+            </div>           
+          </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+    <% include ./../partials/user/scripts %>
+    <script>
+        // document.getElementById('addNew').addEventListener("click", () => {
+        //     let alarmSymbol = document.getElementById("alarmSymbol").value
+        //     let alarmPrice= document.getElementById("alarmPrice").value
+        //     let alarmTypeSelect= document.getElementById("alarmType")
+        //     let alarmType = alarmTypeSelect.options[alarmTypeSelect.selectedIndex].value
+            
+            
+        //     console.log(alarmSymbol, alarmPrice, alarmType)
+        // })
+
+        const handleAlarmType = () =>{
+            let e = document.querySelector(`select[name="alarmType"]`);
+            let alarmType = e.options[e.selectedIndex].value;
+            if(alarmType == "static"){
+                document.querySelector(`div[id="staticPanel"]`).classList.add('d-blok')
+                document.querySelector(`div[id="staticPanel"]`).classList.remove('d-none');
+                document.querySelectorAll(`div[id="ichimokuPanel"]`).forEach(element => {
+                    element.classList.add('d-none')
+                });
+            }else{
+                document.querySelectorAll(`div[id="ichimokuPanel"]`).forEach(element => {
+                    element.classList.add('d-blok')
+                })
+                document.querySelectorAll(`div[id="ichimokuPanel"]`).forEach(element => {
+                    element.classList.remove('d-none')
+                });
+                document.querySelector(`div[id="staticPanel"]`).classList.add('d-none');
+            }
+                
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ./../partials/user/styles %>
+    <title>Register</title>
+    <style>
+        .error {
+            color: red;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    
+    
+    <div class="container">
+        <h1 class="offset-xl-3">Register</h1>
+        <div class="row">
+            <div class="col-xl-4 offset-xl-4 mt-5">
+                <form action="#" method="post">
+                    <label for="email">Email</label>
+                    <input type="text" name="email" class="form-control" placeholder="Email" required>
+                    <div class="email error"></div>
+                    <label for="password">Password</label>
+                    <input type="password" name="password" class="form-control" required placeholder="Password">
+                    <div class="password error"></div>
+                    <button class="btn btn-sm btn-primary mt-2">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <% include ./../partials/user/scripts %>
+    <script>
+        const form =document.querySelector('form');
+        const emailError = document.querySelector('.email.error')
+        const passwordError = document.querySelector('.password.error')
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            emailError.textContent = '';
+            passwordError.textContent = '';
+            const email = form.email.value;
+            const password = form.password.value;
+            try{
+                const result = await fetch(`http://${window.location.hostname}:${window.location.port}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                })
+                const data = await result.json();
+                console.log(data)
+                if(data.errors) {
+                    emailError.textContent = data.errors.email;
+                    passwordError.textContent = data.errors.password;
+                }
+                if(data.user){
+                    location.assign(`http://${window.location.hostname}:${window.location.port}/`)
+                }
+            }catch(e){
+
+            }
+
+            
+        })
+    </script>
+</body>
+</html>

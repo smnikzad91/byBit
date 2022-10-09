@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <%- include('./partials/head'); %>
+  <title>وب سایت شایان نیکزاد</title>
+  <body onload="updatePrice()" lang="ar" dir="rtl">
+    <%- include('./partials/header') %>
+
+    <div class="container mt-2">
+      <h2 class="mr-5">آخرین تحلیل ها</h2>
+
+      <% analysis.forEach(item => { %>
+        <div class="row d-inline">
+          <a href="https://shayannikzad.ir/analysis/<%= item.title %>">
+            <em><%= item.date %></em>
+          <strong><%= item.title %></strong>
+          </a>
+        </div>
+        <br>
+        <% }) %>
+    </div>
+
+
+    <div class="container mt-5">
+      <div>
+        <h3 class="text-center">
+          مراحل ثبت نام در وبسایت بایننس
+        </h3>
+        <div class="col-xl-8 offset-xl-2  mt-2">
+          <div id="75896915719"><script type="text/JavaScript" src="https://www.aparat.com/embed/4zsrS?data[rnddiv]=75896915719&data[responsive]=yes"></script></div>
+          <p >
+            سلام دوستان
+            تو این ویدیو مراحل ساخت جیمیل جدید و ثبت نام در وب سایت بایننس رو با هم انجام میدیم و در نهایت بهتون یاد میدم چطوری امنیت حسابتون رو از طریق رمز پویا بالا ببرید
+            امیدوارم استفاده لازم رو ببرید
+          </p>
+        </div>
+      </div>
+    </div>
+    <hr>
+
+    <div class="container mt-5">
+      <div>
+        <h3 class="text-center">
+          معرفی برخی از امکانات وب سایت بایننس
+        </h3>
+        <div class="col-xl-8 offset-xl-2 mt-2">
+          <div id="48055882241"><script type="text/JavaScript" src="https://www.aparat.com/embed/QGqhc?data[rnddiv]=48055882241&data[responsive]=yes"></script></div>
+          <p>
+            توی این ویدیو یه سری توضیحاتی در مورد والت، بازارهای مختلف مثل اسپات و فیوچر، نحوه دریافت و برداشت رمزارز و مطالبی دیگه رو در موردش صحبت میکنیم
+          </p>
+        </div>
+      </div>
+    </div>
+    <hr>
+
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <%- include('./partials/scripts') %>
+  </body>
+</html>

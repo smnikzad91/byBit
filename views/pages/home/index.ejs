@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <%- include('./../../partials/home/seo'); %>
+    <%- include('./../../partials/home/styles'); %>
+    <title>صفحه اصلی-شایان نیکزاد</title>
+</head>
+
+<body class="body-home" onload="updatePrice()">
+    <%- include('./../../partials/home/nav'); %>
+
+
+
+    <div class="page-content page-home">
+
+        <div class="slider-bar">
+            <div class="slider-box">
+                <div class="swiper-container">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <img src="https://shayannikzad.ir/images/slider-01.jpg" alt="" />
+                        </div>
+                        <div class="swiper-slide">
+                            <img src="https://shayannikzad.ir/images/slider-01.jpg" alt="" />
+                        </div>
+                    </div>
+                </div>   
+                <!-- <div class="swiper-pagination"></div> -->
+            </div>
+        </div>
+
+        <div class="service-bar">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6 col-xs-6">
+                        <div class="item">
+                            <img src="https://shayannikzad.ir/images/bitcoin-encryption.png" alt="" />
+                            <div class="title">کمترین ریسک</div>
+                            <div class="des">روزانه حداقل 10 سیگنال</div>
+                        </div>
+                    </div>
+    
+                    <div class="col-md-3 col-sm-6 col-xs-6">
+                        <div class="item">
+                            <img src="https://shayannikzad.ir/images/bitcoin-wallet-a.png" alt="" />
+                            <div class="title">سود مطمئن</div>
+                            <div class="des">ماهیانه 20 تا 40 درصد</div>
+                        </div>
+                    </div>
+    
+                    <div class="col-md-3 col-sm-6 col-xs-6">
+                        <div class="item">
+                            <img src="https://shayannikzad.ir/images/cryptocurrencies-going-up.png" alt="" />
+                            <div class="title">سیگنال های پر سود</div>
+                            <div class="des dir-ltr">ماهانه بیش از 300 سیگنال</div>
+                        </div>
+                    </div>
+    
+                    <div class="col-md-3 col-sm-6 col-xs-6">
+                        <div class="item">
+                            <img src="https://shayannikzad.ir/images/withdraw-a.png" alt="" />
+                            <div class="title">اشتراک ویژه</div>
+                            <div class="des">مختص اعضای پرمیوم</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <%- include('./../../partials/home/top10Price'); %>
+
+        <div class="article-bar">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="section-title-bar"><span class="title">جدیدترین تحلیل ها</span></div>
+                        <div class="swiper-button-box">
+                            <div class="swiper-button-prev"><i class="fal fa-long-arrow-right icon"></i></div>
+                            <div class="swiper-button-next"><i class="fal fa-long-arrow-left icon"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12">
+                        <div class="swiper-container">
+                            <div class="swiper-wrapper">
+                            <% articles.forEach(article => { %>
+                                <div class="swiper-slide">
+                                    <a href="https://shayannikzad.ir/analyses?title=<%= article.title %>&timestamp=<%= article.ts %>" class="article-box">
+                                        <div class="image"><img src="<%= article.imageUrl %>" alt="" /></div>
+                                        <div class="date"><%= article.date %></div>
+                                        <h3 class="title"><%= article.title %></h3>
+                                        <div class="des"><%= article.abstract%></div>
+                                    </a>
+                                </div>
+                            <% }) %>                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="video-bar">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="section-title-bar"><span class="title">جدیدترین فیلم های آموزشی</span></div>   
+                        <div class="swiper-button-box">
+                            <div class="swiper-button-prev"><i class="fal fa-long-arrow-right icon"></i></div>
+                            <div class="swiper-button-next"><i class="fal fa-long-arrow-left icon"></i></div>
+                        </div>
+                    </div>   
+                    <div class="col-xs-12">
+                        <div class="swiper-container">
+                            <div class="swiper-wrapper">
+                                <% videos.forEach(video => { %>
+                                    <div class="swiper-slide">
+                                        <a href="https://shayannikzad.ir/videos?title=<%= video.title %>&timestamp=<%= video.ts %>" class="video-box">
+                                            <div class="image"><img src="<%= video.coverUrl %>" alt="" /></div>
+                                            <h3 class="title"><%= video.title %></h3>
+                                        </a>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="ad-bar">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="title">اشتراک VIP PREMIUM</div>
+                        <div class="des">همین حالا عضو شوید و لذت ترید ارزهای دیجیتال را با ما تجربه کنید</div>
+                        <div class="btn-box">
+                            <a href="https://api.whatsapp.com/send?phone=+989119100991" class="btn">خرید اشتراک ویژه</a>
+                            <a href="https://t.me/nikzadpublicsignal" class="btn">کانال سیگنال رایگان</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+
+
+
+
+
+
+    <%- include('./../../partials/home/footer'); %>
+    <%- include('./../../partials/home/scripts'); %>
+    <script src="https://shayannikzad.ir/javascripts/socket.io.min.js"></script>
+    <script src="https://shayannikzad.ir/javascripts/socketScript.js"></script>
+</body>
+
+</html>

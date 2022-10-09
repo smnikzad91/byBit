@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./../../partials/head'); %>
+    <title><%= analysis.title %></title>
+</head>
+<body onload="updatePrice()"  lang="ar" dir="rtl">
+    <%- include('./../../partials/header'); %>
+
+
+    <div class="container">
+        <div class="row mt-3">
+            
+            <div class="col-xl-3 offset-xl-2"><%= analysis.title %></div>
+            <div class="col-xl-3 col-sm-2"><%= analysis.date %></div>
+            
+        </div>
+        <div class="row">
+            <img class="img-fluid" src="<%= analysis.imageUrl %>" alt="">
+            <p><%= analysis.description %></p>
+            
+        </div>
+    </div>
+
+
+    <%- include('./../../partials/scripts') %>
+    <%- include('./../../partials/nobitexScript') %>
+</body>
+</html>

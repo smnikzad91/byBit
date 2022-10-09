@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <%- include('./../../../partials/home/seo'); %>
+    <%- include('./../../../partials/home/styles'); %>
+    <title>صفحه اصلی-شایان نیکزاد</title>
+</head>
+
+<body class="page-content page-article">
+    <%- include('./../../../partials/home/nav'); %>
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <ul class="breadcrumb">
+                    <li><a href="https://shayannikzad.ir/">صفحه نخست</a></li>
+                    <li>تحلیل ها</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+   
+    <div class="page-content page-article">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+
+                    <% analysis.forEach(item => { %>
+                        <div class="post-box">
+                            <a href="https://shayannikzad.ir/analyses?title=<%= item.title %>&timestamp=<%= item.ts %>">
+                                <div class="image"><img src="<%= item.imageUrl %>" alt="<%= item.title %>" /></div>
+                                <div class="title-date-des">
+                                    <div class="date"><%= item.date %></div>
+                                    <h3 class="title"><%= item.title %></h3>
+                                    <div class="des"><%= item.abstract %></div>
+                                </div>
+                            </a>
+                        </div>
+                        <% }) %>
+
+
+                    <!-- <div class="post-box">
+                        <a href="./article-view.html">
+                            <div class="image"><img src="./public/image/article/Posteos2.jpg" alt="" /></div>
+                            <div class="title-date-des">
+                                <div class="date">99/12/15</div>
+                                <h3 class="title">ایاس (EOS) چیست؟ مروری بر داستان الماس‌های بدتراش</h3>
+                                <div class="des">فلسفه نام‌گذاری ایاس (EOS)، همیشه یکی از رازهای این شبکه بوده است. لوگوی آن هم همین‌طور! معلوم نیست لوگوی ایاس واقعاً نماد یک قطعه الماس است ...</div>
+                            </div>
+                        </a>
+                    </div>
+
+    
+                    <div class="post-box">
+                        <a href="./article-view.html">
+                            <div class="image"><img src="./public/image/article/how-to-buy-cardano.jpg" alt="" /></div>
+                            <div class="title-date-des">
+                                <div class="date">99/12/15</div>
+                                <h3 class="title">آموزش خرید کاردانو ؛ راهنمای جامع سرمایه‌گذاری</h3>
+                                <div class="des">کاردانو یک شبکه مبتنی بر بلاک چین است که ارز دیجیتال آن «ADA» نام دارد. این شبکه در واقع پلتفرمی برای انتقال ارزش، ایجاد قراردادهای هوشمند و همچنین ساخت برنامه‌های غیرمتمرکز است که در حال حاضر رقیبی ...</div>
+                            </div>
+                        </a>
+                    </div> -->
+    
+  
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <%- include('./../../../partials/home/footer'); %>
+    <%- include('./../../../partials/home/scripts'); %>
+</body>
+
+</html>

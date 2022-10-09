@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./../../partials/head'); %>
+    <title>All Videos</title>
+</head>
+<body lang="ar" dir="rtl">
+    <%- include('./../../partials/header'); %>
+
+
+   <div class="container">
+    <table class="table table-dark table-hover mt-2 text-center">
+        <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">عنوان</th>
+              <th scope="col">تاریخ و زمان</th>
+              <th scope="col">عملیات</th>
+            </tr>
+          </thead>
+          <tbody>
+              <% var i=0; %>
+            <% videos.forEach(video => { %>
+                <tr>
+                    <th><%= ++i %></th>
+                    <td><%= video.title %></td>
+                    <td><%= video.date %></td>
+                    <td>
+                        <a onclick="return confirm('Are you Sure?')" href="https://shayannikzad.ir/admin/video/postToChannel/<%= video.id %>" class="btn btn-sm btn-primary">publish</a>
+                    </td>
+                </tr>
+            <% }) %>
+          </tbody>
+    </table>
+   </div>
+
+
+    <%- include('./../../partials/scripts') %>
+    <%- include('./../../partials/nobitexScript') %>
+</body>
+</html>

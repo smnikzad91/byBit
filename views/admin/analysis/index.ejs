@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./../../partials/head'); %>
+    <title>all analysis</title>
+</head>
+<body lang="ar" dir="rtl">
+    <%- include('./../../partials/header'); %>
+
+
+   <div class="container">
+    <table class="table table-dark table-hover mt-2 text-center">
+        <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">نماد</th>
+              <th scope="col">عنوان</th>
+              <th scope="col">تاریخ و زمان</th>
+              <th scope="col">عملیات</th>
+            </tr>
+          </thead>
+          <tbody>
+              <% var i=0; %>
+            <% analysis.forEach(item => { %>
+                <tr>
+                    <th><%= ++i %></th>
+                    <td><%= item.symbol %></td>
+                    <td><%= item.title %></td>
+                    <td><%= item.date %></td>
+                    <td>
+                        <a onclick="return confirm('Are you Sure?')" href="https://shayannikzad.ir/admin/analysis/postToChannel/<%= item.id %>" class="btn btn-sm btn-primary">publish</a>
+                    </td>
+                </tr>
+            <% }) %>
+          </tbody>
+    </table>
+   </div>
+
+
+    <%- include('./../../partials/scripts') %>
+    <%- include('./../../partials/nobitexScript') %>
+</body>
+</html>

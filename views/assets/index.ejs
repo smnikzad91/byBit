@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assets</title>
+    <% include ./../partials/user/styles %>
+    <style>
+        .bg-red{
+            background-color: red !important;
+        }
+        .bg-green{
+            background-color: green !important;
+        }
+
+        .bg-transition {
+            transition: background-color 500ms !important;
+        }
+    </style>
+</head>
+<body>
+<% include ./../partials/user/navbar %>
+<div class="container-fluid mt-5">
+    <div class="col-xl-2 mt-5">
+        <h3 class=""> &nbsp;&nbsp;Balance:<span id="amountSum" class="badge text-secondary">0</span></h3>
+        <input class="form-control" id="myInput" type="text" placeholder="Search..">
+    </div>
+    <table id="myTable" class="table table-sm table-hover table-dark mt-2 text-center">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Volume</th>
+            <th scope="col">$Price</th>
+            <th scope="col">$Amount</th>
+            <th scope="col">Operation</th>
+        </tr>
+        </thead>
+        <tbody class="">
+        <% assets.forEach((asset, index) => {  %>
+            <% let {currency, balance} = asset %>
+            <tr>
+                <th><%= ++index %></th>
+                <td class="symbol"><%= currency %></td>
+                <td id="<%= currency + "-USDT-volume"%>"><%= Math.round((balance * 1000)) / 1000 %></td>
+                <% if(currency == "USDT"){ %>
+                    <td>1</td>
+                    <td id="USDT-USDT-amount"><%= Math.round(balance * 100 ) / 100 %></td>
+                <% }else{ %>
+                    <td id="<%= currency + "-USDT-price" %>">0</td>
+                    <td id="<%= currency + "-USDT-amount" %>">0</td>
+                <% } %>
+                <td>
+                    <% if(currency !== "USDT"){ %>
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                            <a href="/asset/sell?currency=<%= currency %>" class="btn btn-danger" onclick="return confirm(`Are You Sure?`)">SELL</a>
+                            <a href="/asset/view/<%= currency %>" class="btn btn-success">View</a>
+                        </div>
+                    <% } %>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+</div>
+
+<% include ./../partials/user/scripts %>
+<script>
+    $(document).ready(function(){
+        $("#myInput").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#myTable tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+
+    let socket = io();
+    socket.on('connect', () => {
+        let symbols = document.querySelectorAll(`td[class="symbol"]`)
+            let symbolsArray = [];
+            symbols.forEach(item => {
+                let { outerText } = item;
+                if(outerText == "USDT")
+                    return
+                symbol = outerText + '-USDT'
+                symbolsArray.push(symbol)
+            })
+        
+            console.log("io connected")
+            socket.emit("getPrice", symbolsArray)
+    })    
+
+
+    socket.on("clientPrices", ([data]) => {
+        try{
+            let { symbol, close } = data
+            price = close
+            // document.querySelector(`td[id="${symbol}-price"]`).innerText = close
+            // let amount = parseFloat(document.querySelector(`td[id="${symbol}-volume"]`).innerText);
+            // document.querySelector(`td[id="${symbol}-amount"]`).innerText = (amount * close).toFixed(2)
+
+
+            let priceId = symbol + "-price"
+            let amountId = symbol + "-amount"
+            let volumeId = symbol + "-volume"
+            let priceHolder = document.getElementById(`${priceId}`)
+            let amountHolder = document.getElementById(`${amountId}`)
+            if(priceHolder != null){
+                let volume = document.getElementById(`${volumeId}`).innerText;
+                let lastPrice = parseFloat(document.getElementById(`${priceId}`).innerText)
+                if(price > lastPrice){
+                    priceHolder.classList.remove("bg-transition")
+                    priceHolder.classList.add("bg-green")
+                    amountHolder.classList.remove("bg-transition")
+                    amountHolder.classList.add("bg-green")
+                    setTimeout(()=>{
+                        priceHolder.classList.add("bg-transition")
+                        priceHolder.classList.remove("bg-green")
+                        amountHolder.classList.add("bg-transition")
+                        amountHolder.classList.remove("bg-green")
+                    }, 0)
+                }else if(price < lastPrice){
+                    priceHolder.classList.remove("bg-transition")
+                    priceHolder.classList.add("bg-red")
+                    amountHolder.classList.remove("bg-transition")
+                    amountHolder.classList.add("bg-red")
+                    setTimeout(()=>{
+                        priceHolder.classList.add("bg-transition")
+                        priceHolder.classList.remove("bg-red")
+                        amountHolder.classList.add("bg-transition")
+                        amountHolder.classList.remove("bg-red")
+                    }, 0)
+                }
+                priceHolder.innerText = price
+                amountHolder.innerText = Math.round(volume * price * 100) / 100
+        }
+
+        }catch(err){
+            // console.log(err)
+        }     
+    })
+
+
+
+    setInterval(() => {
+        let amounts = document.querySelectorAll(`td[id*="amount"]`)
+        let amountSum = 0;
+        amounts.forEach(amount => {
+            amountSum += parseFloat(amount.innerText)
+        })
+        amountSum = Math.round(amountSum * 100 ) / 100
+        document.getElementById("amountSum").innerText = "$" + amountSum
+        document.title = `Assets $${amountSum}`
+    }, 1000)
+</script>
+</body>
+</html>

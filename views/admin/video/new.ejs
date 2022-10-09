@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./../../partials/home/styles'); %>
+    <title>ویدیوی جدید</title>
+</head>
+<body>
+    <h1 class="text-center">ویدیو جدید</h1>
+    <div class="container">
+        <form action="https://shayannikzad.ir/admin/videos/new" style="direction: rtl;" method="post" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-xl-8 ">
+                    <label for="">عنوان</label>
+                    <input name="title" class="form-control mt-2 col-xl-8" placeholder="عنوان">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-12">
+                    <label for="">خلاصه</label>
+                    <textarea name="abstract" class="form-control" cols="30" rows="5" placeholder="خلاصه"></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-12">
+                    <label for="">توضیحات</label>
+                    <textarea name="description" class="form-control" cols="30" rows="10" placeholder="توضیحات"></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-8 ">
+                    <label for="">تگ ها</label><br>
+                    <small class="small text-danger">تگ ها را با "&" از هم جدا کنید</small>
+                    <input name="tags" class="form-control mt-2 col-xl-8" placeholder="تگ ها">
+                </div>
+            </div>
+            <div class="row">
+                <label for="">آدرس ویدیو</label>
+                <input type="text" name="videoId" class="form-control" placeholder="آی دی آپارات">
+            </div>
+            <input type="file" name="file" id="">
+            <input type="submit" value="انتشار" class="btn btn-primary">
+        </form>
+    </div>
+
+
+    <%- include('./../../partials/home/scripts'); %>
+</body>
+</html>

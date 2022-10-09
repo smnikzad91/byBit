@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Basket</title>
+    <% include ./../partials/user/styles %>
+</head>
+<body>
+<% include ./../partials/user/navbar %>
+
+<hr class="bg-secondary border-3 border-top border-secondary">
+<div class="container-fluid">
+    <table class="table table-hover table-dark mt-2 text-center">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">name</th>
+            <th scope="col">Day Passed</th>
+            <th scope="col">Operation</th>
+        </tr>
+        </thead>
+        <tbody class="">
+        <% baskets.forEach((basket, index) => {  %>
+            <tr>
+                <th><%= ++index %></th>
+                <td><%= basket.name %></td>
+                <%
+                    let hourPassed = Math.ceil((Date.now()- basket.timestamp) / ( 60 * 60 * 1000 ));
+                    let timeElapsed = "";
+                    if(hourPassed > 24){
+                        let dayPassed = Math.floor(hourPassed / 24)
+                        let hour = hourPassed - (dayPassed * 24)
+                        timeElapsed = `${dayPassed} Day And ${hour} Hour`
+                    }else{
+                        timeElapsed = `${hourPassed} Hour`
+                    }
+                %>
+                <td><%= timeElapsed %></td>
+                <td><a href="/users/filter/baskets/view/<%= basket._id %>" class="btn btn-sm btn-success">View</a><a href="/users/filter/baskets/delete/<%= basket.id %>" class="btn btn-sm btn-danger" onclick="return confirm(`Are You Sure?`)">Delete</a></td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+</div>
+<% include ./../partials/user/scripts %>
+<script>
+
+
+</script>
+</body>
+</html>

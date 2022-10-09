@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <%- include('./../../../partials/home/seo'); %>
+    <%- include('./../../../partials/home/styles'); %>
+    <title>صفحه اصلی-شایان نیکزاد</title>
+</head>
+
+<body>
+    <%- include('./../../../partials/home/nav'); %>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <ul class="breadcrumb">
+                    <li><a href="https://shayannikzad.ir/">صفحه نخست</a></li>
+                    <li>فیلم ها</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="page-content page-video">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <% videos.forEach(video => {%>
+                        <div class="post-box">
+                            <a href="https://shayannikzad.ir/videos?title=<%= video.title %>&timestamp=<%= video.ts %>">
+                                <div class="image"><img src="<%= video.coverUrl%>" alt="<%= video.title %>" /></div>
+                                <div class="title-date-des">
+                                    <div class="date"><%= video.date %></div>
+                                    <h3 class="title"><%= video.title %></h3>
+                                    <div class="des"><%= video.abstract %></div>
+                                </div>
+                            </a>
+                        </div>
+
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <%- include('./../../../partials/home/footer'); %>
+    <%- include('./../../../partials/home/scripts'); %>
+</body>
+
+</html>

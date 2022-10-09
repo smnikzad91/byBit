@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Basket pnl: </title>
+
+    <% include ./../partials/user/styles %>
+    <style>
+        .bg-red{
+            background-color: red !important;
+        }
+        .bg-green{
+            background-color: green !important;
+        }
+
+        .bg-transition {
+            transition: background-color 500ms !important;
+        }
+    </style>
+</head>
+<body>
+<% include ./../partials/user/navbar %>
+<h1 class="text-center mt-3">View Basket</h1>
+<h3> &nbsp;&nbsp;Pnl:<span id="pnlSum" class="badge text-secondary">0</span></h3>
+<div class="container-fluid">
+    <table class="table table-hover table-dark mt-2 text-center">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Symbol</th>
+            <th scope="col">% Low</th>
+            <th scope="col">% High</th>
+            <th scope="col">Price</th>
+            <th scope="col">% R/R</th>
+            <th scope="col">Stop Price</th>
+            <th scope="col">Limit Price</th>
+            <th scope="col">Minor Resistance</th>
+            <th scope="col">Minor Resistance Precent</th>
+            <th scope="col">last Price</th>
+            <th scope="col">PNL</th>
+
+        </tr>
+        </thead>
+        <tbody class="">
+        <% let pnlSum = 0, count = 0; %>
+
+        <% basket.data.forEach( (data, index) => {  %>
+            <tr>
+                <td><%= ++index %></td>
+                <td><%= data.symbol.split('-')[0] %></td>
+                <td><%= data.lowPrecent %></td>
+                <td><%= data.highPrecent %></td>
+                <td id="<%= data.symbol + "-price" %>"><%= data.price %></td>
+                <td><%= data.RR %></td>
+                <td><%= data.stop %></td>
+                <td><%= data.limit %></td>
+                <td><%= data.minorResistance %></td>
+                <td><%= data.minorResistancePrecent %></td>
+                <td id="<%= data.symbol + "-lastPrice" %>"><%= data.lastPrice %></td>
+                <% let pnl = Math.round(((data.lastPrice - data.price) / data.price) * 1000) / 10;
+                count = ++index
+                    pnlSum += pnl
+                    let style = ""
+                    if(pnl > 0) style = "text-success"
+                    else style = "text-danger"
+                %>
+
+                <td id="<%= data.symbol + "-pnl"%>" class="<%= style %>" ><%= pnl %></td>
+            </tr>
+        <% }) %>
+        <strong></strong>
+        </tbody>
+    </table>
+</div>
+
+<% include ./../partials/user/scripts %>
+<script>
+    let socket = io();
+    socket.on("lastPrices", data => {
+        let { symbol, price } = data;
+        let lastPriceId = symbol + "-lastPrice"
+        let priceId = symbol + "-price"
+        let pnlId = symbol + "-pnl"
+        let lastPriceHolder = document.getElementById(`${lastPriceId}`)
+        let pnlHolder = document.getElementById(`${pnlId}`)
+        let basePrice = document.querySelector(`td[id="${priceId}"]`);
+
+        if(lastPriceHolder != null && basePrice !=null){
+            let oldLastPrice = parseFloat(document.getElementById(`${lastPriceId}`).innerText)
+            if(price > oldLastPrice){
+                lastPriceHolder.classList.remove("bg-transition")
+                lastPriceHolder.classList.add("bg-green")
+                pnlHolder.classList.remove("bg-transition")
+                pnlHolder.classList.add("bg-green")
+                setTimeout(()=>{
+                    lastPriceHolder.classList.add("bg-transition")
+                    lastPriceHolder.classList.remove("bg-green")
+                    pnlHolder.classList.add("bg-transition")
+                    pnlHolder.classList.remove("bg-green")
+                }, 0)
+            }else if(price < oldLastPrice){
+                lastPriceHolder.classList.remove("bg-transition")
+                lastPriceHolder.classList.add("bg-red")
+                pnlHolder.classList.remove("bg-transition")
+                pnlHolder.classList.add("bg-red")
+                setTimeout(()=>{
+                    lastPriceHolder.classList.add("bg-transition")
+                    lastPriceHolder.classList.remove("bg-red")
+                    pnlHolder.classList.add("bg-transition")
+                    pnlHolder.classList.remove("bg-red")
+                }, 0)
+            }
+
+
+            basePrice = parseFloat(basePrice.innerText)
+            lastPriceHolder.innerText = price
+            let pnl;
+            if(price >= basePrice){
+                pnl = Math.round(((price - basePrice) / price) * 10000) / 100;
+                document.getElementById(`${pnlId}`).classList.add("text-success")
+                document.getElementById(`${pnlId}`).classList.remove("text-danger")
+            }else{
+                pnl = Math.round(((basePrice - price) / price) * 10000) / -100;
+                document.getElementById(`${pnlId}`).classList.add("text-danger")
+                document.getElementById(`${pnlId}`).classList.remove("text-success")
+            }
+            document.getElementById(`${pnlId}`).innerText = pnl;
+
+
+        }
+    })
+
+    setInterval(() => {
+        let pnls = document.querySelectorAll(`td[id*="pnl"]`)
+        let pnlSum = 0, count = 0;
+        pnls.forEach((pnl, index) => {
+            pnlSum += parseFloat(pnl.innerText)
+            count = ++index;
+        })
+        pnlSum = Math.round((pnlSum / count) * 100 ) / 100
+        document.getElementById("pnlSum").innerText = "%" + pnlSum
+        document.title = `Basket pnl: ${pnlSum}`
+        if(pnlSum >= 0)
+        {
+            document.querySelector(`span[id="pnlSum"]`).classList.add("text-success")
+            document.querySelector(`span[id="pnlSum"]`).classList.remove("text-danger")
+        }else if (pnlSum < 0){
+            document.querySelector(`span[id="pnlSum"]`).classList.remove("text-success")
+            document.querySelector(`span[id="pnlSum"]`).classList.add("text-danger")
+        }
+    }, 1000)
+
+
+
+</script>
+</body>
+</html>

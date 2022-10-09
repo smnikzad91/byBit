@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Filter Page</title>
+    <% include ./../partials/user/styles %>
+</head>
+<body>
+<% include ./../partials/user/navbar %>
+<hr class="bg-secondary border-3 border-top border-secondary">
+<div class="container">
+    <h1 class="mt-3">Run Filter</h1>
+    <div class="row">
+        <div class="col col-xl-2"><input class="form-control" name="period" placeholder="Period"></div>
+        <div class="col col-xl-2"><input class="form-control" name="lowPrecent" placeholder="lowPrecent"></div>
+        <div class="col col-xl-2"><input class="form-control" name="highPrecent" placeholder="highPrecent"></div>
+        <div class="col col-xl-4"><button class="btn btn-danger btn-block" name="run">Run</button><button class="btn btn-primary" name="fetch">Fetch</button><button class="btn btn-success" name="save" onclick="return()">Save</button></div>
+    </div>
+</div>
+<div class="container-fluid">
+    <table class="table table-hover table-dark mt-2 text-center">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Symbol</th>
+            <th scope="col">% Low</th>
+            <th scope="col">% High</th>
+            <th scope="col">Price</th>
+            <th scope="col">% R/R</th>
+            <th scope="col">Stop Price</th>
+            <th scope="col">Limit Price</th>
+            <th scope="col">Minor Resistance</th>
+            <th scope="col">Minor Resistance Precent</th>
+            <th scope="col">Operation</th>
+        </tr>
+        </thead>
+        <tbody class="tablePanel">
+        </tbody>
+    </table>
+</div>
+
+<% include ./../partials/user/scripts %>
+<script>
+    let runButton = document.querySelector(`button[name="run"]`)
+    let fetchButton = document.querySelector(`button[name="fetch"]`)
+    let saveButton = document.querySelector(`button[name="save"]`)
+    let tablePanel = document.querySelector(`tbody[class="tablePanel"]`)
+    saveButton.addEventListener('click', () => {
+        let rows = document.querySelector(`tbody[class="tablePanel"]`).rows;
+
+        let baskets = [];
+        Object.keys(rows).forEach(key => {
+            let symbol = rows[key].cells[1].outerText + "-USDT";
+            let lowPrecent = rows[key].cells[2].outerText;
+            let highPrecent = rows[key].cells[3].outerText;
+            let price = rows[key].cells[4].outerText;
+            let RR = rows[key].cells[5].outerText;
+            let stop = rows[key].cells[6].outerText;
+            let limit = rows[key].cells[7].outerText;
+            let minorResistance = rows[key].cells[8].outerText;
+            let minorResistancePrecent = rows[key].cells[9].outerText;
+            baskets.push({symbol, lowPrecent, highPrecent, price, RR, stop, limit, minorResistance, minorResistancePrecent})
+        })
+        fetch(`/users/filter/baskets/new`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(baskets)
+        }).then(res => res.json())
+            .then(data => {
+                console.log(data)
+            }).catch(err => console.log(err))
+
+    })
+
+    runButton.addEventListener('click', () => {
+        fetchButton.classList.add('disabled')
+        setTimeout(() => {
+            fetchButton.classList.remove('disabled')
+        }, 50000);
+        let period = document.querySelector(`input[name="period"]`).value;
+        let lowPrecent = document.querySelector(`input[name="lowPrecent"]`).value;
+        let highPrecent = document.querySelector(`input[name="highPrecent"]`).value;
+        fetch(`/users/filter/runFilter?period=${period}&lowPrecent=${lowPrecent}&highPrecent=${highPrecent}`)
+    })
+
+    fetchButton.addEventListener('click', () => {
+        tablePanel.innerHTML = "";
+        fetch(`/users/filter/fetch`)
+            .then(res => res.json())
+            .then(data => {
+                let filters = data.data
+                filters.forEach((filter, index) => {
+                    let tableRow = document.createElement("tr")
+                    tableRow.setAttribute("id", `${++index}`)
+
+                    let rowHead = document.createElement("th")
+                    let rowHeadText = document.createTextNode(`${index}`)
+                    rowHead.appendChild(rowHeadText)
+                    tableRow.appendChild(rowHead)
+
+                    let rowSymbol = document.createElement("td")
+                    let rowSymbolText = document.createTextNode(`${filter.symbol.split('-')[0]}`)
+                    rowSymbol.appendChild(rowSymbolText)
+                    tableRow.appendChild(rowSymbol)
+
+                    let rowLow = document.createElement("td")
+                    let rowLowText = document.createTextNode(`${filter.lowPrecent}`)
+                    rowLow.appendChild(rowLowText)
+                    tableRow.appendChild(rowLow)
+
+                    let rowHigh = document.createElement("td")
+                    let rowHighText = document.createTextNode(`${filter.highPrecent}`)
+                    rowHigh.appendChild(rowHighText)
+                    tableRow.appendChild(rowHigh)
+
+                    let rowPrice = document.createElement("td")
+                    let rowPriceText = document.createTextNode(`${filter.lastClose}`)
+                    rowPrice.appendChild(rowPriceText)
+                    tableRow.appendChild(rowPrice)
+
+                    let rowRR = document.createElement("td")
+                    let rowRRText = document.createTextNode(`${filter.RR}`)
+                    rowRR.appendChild(rowRRText)
+                    tableRow.appendChild(rowRR)
+
+                    let rowStop = document.createElement('td')
+                    let rowStopText = document.createTextNode(`${filter.stop}`)
+                    rowStop.appendChild(rowStopText)
+                    tableRow.appendChild(rowStop)
+
+                    let rowLimit = document.createElement("td")
+                    let rowLimitText = document.createTextNode(`${filter.limit}`)
+                    rowLimit.appendChild(rowLimitText)
+                    tableRow.appendChild(rowLimit)
+
+                    let rowResistance = document.createElement("td")
+                    let rowResistanceText = document.createTextNode(`${filter.minorResistance}`)
+                    rowResistance.appendChild(rowResistanceText)
+                    tableRow.appendChild(rowResistance)
+
+                    let rowResistancePrecent = document.createElement("td")
+                    let rowResistancePrecentText = document.createTextNode(`${filter.minorResistancePrecent}`)
+                    rowResistancePrecent.appendChild(rowResistancePrecentText)
+                    tableRow.appendChild(rowResistancePrecent)
+
+
+
+                    let rowOperationTd = document.createElement("td")
+                    let rowOperationButton = document.createElement("button")
+                    rowOperationButton.onclick = () => {
+                        document.querySelector(`tr[id="${index}"]`).remove()
+                    }
+
+                    let rowOperationButtonView = document.createElement("a");
+                    rowOperationButtonView.classList.add('btn', 'btn-primary', 'bg-primary')
+                    rowOperationButtonView.setAttribute('href', `http://185.110.190.207:5050/symbol/chart/${filter.symbol.split('-')[0]}`)
+                    let rowOperationButtonViewText = document.createTextNode('Chart');
+                    rowOperationButtonView.appendChild(rowOperationButtonViewText)
+                    rowOperationButtonView.setAttribute("target", "_blank")
+
+
+                    rowOperationButton.classList.add('btn', 'btn-danger', 'bg-danger')
+                    rowOperationButton.setAttribute("id", `${index}`)
+                    let rowOperationButtonText = document.createTextNode('x')
+                    rowOperationButton.appendChild(rowOperationButtonText)
+                    rowOperationTd.appendChild(rowOperationButton)
+                    rowOperationTd.appendChild(rowOperationButtonView)
+
+                    tableRow.appendChild(rowOperationTd)
+                    tablePanel.appendChild(tableRow)
+
+                });
+            }).catch(err => console.log(err))
+    })
+</script>
+</body>
+</html>

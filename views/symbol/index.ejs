@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ./../partials/user/styles %>
+    <title>Leveraged Tokens</title>
+
+</head>
+<body>
+
+    <hr class="bg-secondary border-3 border-top border-secondary">
+    <div class="container-fluid mt-4">
+    
+
+    </div>
+    <div class="container-fluid mt-2">
+        <table id="myTable" class="table table-sm table-hover table-dark text-center">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Symbol</th>
+                    <th scope="col">Chart</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Min</th>
+                    <th scope="col">Max</th>
+                    <th scope="col">%High</th>
+                    <th scope="col">%Low</th>
+                    <th scope="col">Long R/R</th>
+                    <th scope="col">R/R Short</th>
+                </tr>
+            <tbody class="">
+            <%  symbols.forEach((symbol, index) => { %>     
+                <tr>
+                    <th><%= ++index %></th>
+                    <td class="symbol"><%= symbol.name %></td>
+                    <td><a href="http://185.110.190.207:5050/symbol/chart/<%= symbol.name %>" target="_blank" class="btn btn-sm btn-success">View</a></td>
+                    <td id="<%= symbol.symbol %>">--</td>
+                    <td><%= symbol.min %></td>
+                    <td><%= symbol.max %></td>
+                    <td><%= symbol.highPercent %></td>
+                    <td><%= symbol.lowPercent %></td>
+                    <td id="longR2R"><%= symbol.longR2R %></td>
+                    <td id="shortR2R"><%= symbol.shortR2R %></td>
+  
+         
+                 
+                    
+                </tr>
+            <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+
+
+
+    <% include ./../partials/user/scripts %>
+    <script>
+
+
+    </script>
+</body>
+</html>

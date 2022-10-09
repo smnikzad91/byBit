@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <%- include('./../../partials/home/seo'); %>
+    <%- include('./../../partials/home/styles'); %>
+    <title>شایان نیکزاد - سوالات متداول</title>
+</head>
+
+<body class="">
+    <%- include('./../../partials/home/nav'); %>
+
+
+
+
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <ul class="breadcrumb">
+                    <li><a href="https://shayannikzad.ir/">صفحه نخست</a></li>
+                    <li>تماس با ما</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="page-content page-contact-us">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="contact-ways">
+                        <div class="data-box">
+                            <div class="icon-box"><i class="icon fa fa-phone"></i></div>
+                            <div class="des">09119100991</div>
+                        </div>
+    
+                        <div class="data-box">
+                            <div class="icon-box"><i class="icon far fa-envelope"></i></div>
+                            <div class="des font-en">shayannikzad.ir<br>gmail.com@</div>
+                        </div>
+                    </div>
+    
+                    <div class="form-box">
+                        <div class="section-title-bar"><span class="title">ارسال پیام</span></div>
+                        <input type="hidden" name="csrfToken" value="<%= csrfToken %>" form="form-contact">
+                        <form method="post" action="https://shayannikzad.ir/contact-us" name="form-contact" class="form-contact form-horizontal" id="form-contact">
+                            <div class="form-group">
+                                <label class="col-xs-12" for="name">نام و نام خانوادگی</label>
+                                <div class="col-xs-12"><input required type="text" name="name" class="form-control form-contact-name-family" id="form-contact-name-family" dir="rtl" maxlength="50" /></div>
+                            </div>
+    
+                            <div class="form-group">
+                                <label class="col-xs-12" for="form-contact-tel">تلفن</label>
+                                <div class="col-xs-12"><input required type="text" name="contact" class="form-control form-contact-tel" id="form-contact-tel" dir="ltr" maxlength="11" /></div>
+                            </div>
+    
+                            <div class="form-group">
+                                <label class="col-xs-12" for="form-contact-subject">موضوع</label>
+                                <div class="col-xs-12"><input required type="text" name="subject" class="form-control form-contact-subject" id="form-contact-subject" dir="rtl" maxlength="50" /></div>
+                            </div>
+    
+                            <div class="form-group">
+                                <label class="col-xs-12" for="form-contact-des">توضیح</label>
+                                <div class="col-xs-12"><textarea required name="description" class="form-control form-contact-des" id="form-contact-des" dir="rtl" maxlength="1000"></textarea></div>
+                            </div>
+    
+                            <div class="form-group">
+                                <div class="col-xs-12">
+                                    <button type="submit" name="form-contact-submit" class="btn btn-primary form-contact-submit" id="form-contact-submit">ارسال</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="modal-error" tabindex="-1" role="dialog" aria-labelledby="modal-error-label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-error-label">خطا</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+    
+                <div class="modal-body"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <%- include('./../../partials/home/footer'); %>
+    <%- include('./../../partials/home/scripts'); %>
+    <script src="https://shayannikzad.ir/javascripts/contact-us.js"></script>
+</body>
+
+</html>

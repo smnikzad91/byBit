@@ -1,0 +1,706 @@
+    <hr class="bg-secondary border-3 border-top border-secondary">
+    <!-- <div class="container-fluid">
+        <div class="row">
+            <div class="col-xl-1 offset-xl-11">
+                <button onclick="getBalance();" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#orderModalPanel" >New Order</button>
+            </div>
+        </div>
+    </div> -->
+  <div class="modal fade" id="orderModalPanel" tabindex="-1" aria-labelledby="orderModalPanelLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="orderModalPanelLabel">Add New Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cancel"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">      
+            <div class="btn-group" role="group" aria-label="order side">
+              <button class="sideButton btn btn-success" onclick="toggleSide('buy')">Buy</button>
+              <button class="sideButton btn btn-danger" onclick="toggleSide('sell')">Sell</button>
+            </div>       
+          </div>   
+          <hr class="bg-secondary border-3 border-top border-secondary">
+          <div class="row">
+            <div class="col-6">
+              <input class="form-control" id="symbol" name="symbol" placeholder="Symbol" onfocusout="checkSymbol();" autofocus >
+            </div>
+            <div class="col-6">
+              <select name="orderType" id="orderType" class="form-control" onChange="orderTypeChange()">
+                <option value="undefined">Select Order Type</option>
+                <option value="market">Market</option>
+                <option value="limit">Limit</option>
+                <option value="stopLimit">Stop Limit</option>
+                <option value="trailingStop">Trailing Stop</option>
+                <option value="trailingStopLoss">Trailing Stop Loss</option>
+              </select>
+            </div>
+          </div>
+          <hr class="bg-secondary border-3 border-top border-secondary">
+          <div class="row" id="orderPanel">
+          </div>
+          <hr class="bg-secondary border-3 border-top border-secondary">
+          <div class="row">
+            <div class="col-12">
+              <span>Available: </span>
+              <span id="availableVolume">0</span>
+              <strong id="availableCurrency"></strong>
+            </div>
+            <div id="info" class="col-12">
+            </div>          
+          </div>
+        </div>
+        <div class="modal-footer">
+            <button id="orderPanelCloseButton" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button id="executeOrder" type="button" class="btn" onclick="return confirm('Are You Sure?')"></button>      
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<div id="alertPanel" class="alert alert-success alert-dismissible fade hide col-xl-4 position-absolute bottom-0 start-1" role="alert">
+  <strong id="alertText"></strong> 
+  <button id="alertCloseButton" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.1.1/math.min.js" integrity="sha512-o7l/Uxf+iFLa5H6VpPjFdrY+bF+JtYI47FXfYJp6zlCRhs8K8sO1EVyEiS/1FeEvw1b6HeK6oXT3Plza8L/NIQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+let orderSide = "buy"
+let orderSymbol = "";
+let orderPercision = 4;
+let availableCurrency = 0;
+let lastAlertStatus = "alert-success";
+
+orderAlert = (status, message) => {
+    document.querySelector('#alertPanel').classList.remove('hide', lastAlertStatus)
+    document.querySelector('#alertPanel').classList.add('show', status)
+    document.querySelector('#alertText').innerText = message
+    lastAlertStatus = status;
+    setTimeout(() => {
+    document.getElementById("alertCloseButton").click();
+    location.reload();
+    }, 2000)
+}
+
+document.querySelectorAll("button[name='cancelOrder']").forEach( button => {
+    button.addEventListener("click", (e) => {
+    let { id } = e.target;
+    fetch(`http://${window.location.hostname}:${window.location.port}/orders`, {
+        method: 'delete',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+    }).then(res => res.json()).then(data => {
+        let { status, message } = data
+        if(status){
+            orderAlert("alert-success", message)
+            console.log(message)
+            document.getElementById('orderPanelCloseButton').click();
+        }else{
+            orderAlert("alert-danger", message)
+            console.log(message)
+        }
+    }).catch(err => {
+        console.log(err)
+        orderAlert("alert-danger", "Unknown Error, try again")
+    })
+    })
+})
+
+document.getElementById("executeOrder").addEventListener("click", ()=> {
+    let symbol = document.querySelector('input[name="symbol"]').value;
+    let margin = document.querySelector('input[name="margin"]').value;
+    let size, price;
+    
+    switch(orderType){
+    case "market":
+        fetch(`http://${window.location.hostname}:${window.location.port}/orders/marketOrder`, {
+        method: 'post',
+        headers: { 'Content-type': 'application/json' },
+        body: JSON.stringify({ side: orderSide, symbol, margin})
+        }).then(res => res.json()).then(data => {
+        let { status, message } = data;
+        if(status){
+            orderAlert("alert-success", message)
+            console.log(message)
+            document.getElementById('orderPanelCloseButton').click();
+        }else{
+            orderAlert("alert-danger", message)
+            console.log(message)
+        }
+        }).catch(err => {
+        console.log(err)
+        orderAlert("alert-danger", "Unknown Error, try again")
+        })          
+        break;
+        case "limit":
+            
+            price = document.querySelector('input[name="price"]').value;
+            if(orderSide == "buy"){
+            size = math.divide(margin, price)
+
+            }else{
+            size = margin;
+            }
+            fetch(`http://${window.location.hostname}:${window.location.port}/orders/limitOrder`, {
+            method: 'post',
+            headers: { 'Content-type': 'application/json' },
+            body: JSON.stringify({ orderType, side: orderSide, symbol, price, size})
+            }).then(res => res.json()).then(data => {
+            let { status, message } = data;
+            if(status){
+                orderAlert("alert-success", message)
+                console.log(message)
+                document.getElementById('orderPanelCloseButton').click();
+            }else{
+                console.log(message)
+                orderAlert("alert-danger", message)
+            }
+            }).catch(err => {
+            orderAlert("alert-danger", "Unknown Error, try again")
+            })          
+            break;
+            case "stopLimit":
+            
+            price = document.querySelector('input[name="limit"]').value;
+            let stopPrice = document.querySelector('input[name="stop"]').value;
+            if(orderSide == "buy"){
+                size = math.divide(margin, price)
+
+            }else{
+                size = margin;
+            }
+            let stop =""
+            if(orderSide == "buy"){
+                stop ="entry"
+            }else{
+                stop ="loss"
+            }
+            fetch(`http://${window.location.hostname}:${window.location.port}/orders/stopLimitOrder`, {
+            method: 'post',
+            headers: { 'Content-type': 'application/json' },
+            body: JSON.stringify({ orderType, side: orderSide, symbol, stop, stopPrice, price, size})
+            }).then(res => res.json()).then(data => {
+            let { status, message } = data;
+            if(status){
+                orderAlert("alert-success", message)
+                console.log(message)
+                document.getElementById('orderPanelCloseButton').click();
+            }else{
+                console.log(message)
+                orderAlert("alert-danger", message)
+            }
+            }).catch(err => {
+            orderAlert("alert-danger", "Unknown Error, try again")
+            })  
+
+
+
+            break;
+    }
+})
+
+handleTotal = () => {
+    if(orderSide == "sell"){
+    let price = document.querySelector(`input[name="price"]`).value;
+    let margin = document.querySelector(`input[name="margin"]`).value;
+    let total = math.multiply(price, margin).toFixed(2)
+
+
+    let infoPanel = document.querySelector('#info');
+    while (infoPanel.firstChild)
+        infoPanel.removeChild(infoPanel.firstChild);
+
+
+    
+    let info = document.createElement('span')
+    let infoText = document.createTextNode(`Total: ${total}`);
+    info.appendChild(infoText);
+    document.getElementById('info').appendChild(info)
+    }else{
+    let price = document.querySelector(`input[name="price"]`).value;
+    let margin = document.querySelector(`input[name="margin"]`).value;
+    let volume = math.divide(margin, price).toFixed(8)
+
+
+    let infoPanel = document.querySelector('#info');
+    while (infoPanel.firstChild)
+        infoPanel.removeChild(infoPanel.firstChild);
+
+
+    if(volume > 0){
+        let info = document.createElement('span')
+        let infoText = document.createTextNode(`Volume: ${volume}`);
+        info.appendChild(infoText);
+        document.getElementById('info').appendChild(info)
+    }
+
+    }
+    
+}
+
+handlePercent = e => {
+    let step = parseInt(e.id.slice(-1));
+    let x = math.multiply(math.divide(availableCurrency, 4), step)
+    document.querySelector(`input[name='margin']`).value = x.toFixed(orderPercision);   
+    handleTotal();   
+}
+
+orderTypeChange = () => {
+    let type = document.querySelector('select[name="orderType"]').value;
+    // let infoPanel = document.getElementById
+    orderType = type;
+    let orderPanel = document.querySelector('#orderPanel');
+    while (orderPanel.firstChild)
+    orderPanel.removeChild(orderPanel.firstChild);
+
+
+    let input1="", input2="", input3="", input4="", label="", label2="", label3="", label4="";
+    let label1Text="", label2Text="", label3Text="", label4Text="";
+    let marginDiv="", marginInput="";
+    let percentDiv="", percentButtonDiv="";
+    let priceDiv="", priceInput="";
+    let limitDiv="", limitInput="", stopDiv="", stopInput="";
+    switch(type){
+    case "market":
+        marginDiv = document.createElement('div');
+        marginDiv.classList.add('offset-1', 'col-4')
+        marginInput = document.createElement('input');
+        marginInput.classList.add('form-control')
+        marginInput.setAttribute("name", "margin");
+        marginInput.setAttribute("placeholder", "Margin")
+        marginInput.setAttribute("type", "text")
+        marginDiv.appendChild(marginInput)
+        orderPanel.appendChild(marginDiv)
+
+        percentDiv = document.createElement('div');
+        percentDiv.classList.add('col-7')
+        percentButtonDiv = document.createElement('div')
+        percentButtonDiv.classList.add('btn-group', "btn-group-sm", "mt-1")
+        percentButtonDiv.setAttribute("role", "group");
+        percentButtonDiv.setAttribute("aria-label", "Basic radio toggle button group");
+
+
+
+        input1 = document.createElement('input')
+        input1.setAttribute("type", "radio");
+        input1.setAttribute("name", "btnradio");
+        input1.setAttribute("id", "btnradio1");
+        input1.setAttribute("autocomplete", "off");
+        input1.setAttribute("onClick", "handlePercent(this);");
+        input1.classList.add("btn-check")
+
+        label1 = document.createElement('label');
+        label1.classList.add("btn", "btn-outline-primary")
+        label1.setAttribute("for", "btnradio1")
+        label1Text = document.createTextNode("25%")
+        label1.appendChild(label1Text);
+
+
+        input2 = document.createElement('input')
+        input2.setAttribute("type", "radio");
+        input2.setAttribute("name", "btnradio");
+        input2.setAttribute("id", "btnradio2");
+        input2.setAttribute("autocomplete", "off");
+        input2.setAttribute("onClick", "handlePercent(this);");
+        input2.classList.add("btn-check")
+
+        label2 = document.createElement('label');
+        label2.classList.add("btn", "btn-outline-primary")
+        label2.setAttribute("for", "btnradio2")
+        label2Text = document.createTextNode("50%")
+        label2.appendChild(label2Text);
+
+        input3 = document.createElement('input')
+        input3.setAttribute("type", "radio");
+        input3.setAttribute("name", "btnradio");
+        input3.setAttribute("id", "btnradio3");
+        input3.setAttribute("autocomplete", "off");
+        input3.setAttribute("onClick", "handlePercent(this);");
+        input3.classList.add("btn-check")
+
+        label3 = document.createElement('label');
+        label3.classList.add("btn", "btn-outline-primary")
+        label3.setAttribute("for", "btnradio3")
+        label3Text = document.createTextNode("75%")
+        label3.appendChild(label3Text);
+
+        input4 = document.createElement('input')
+        input4.setAttribute("type", "radio");
+        input4.setAttribute("name", "btnradio");
+        input4.setAttribute("id", "btnradio4");
+        input4.setAttribute("autocomplete", "off");
+        input4.setAttribute("onClick", "handlePercent(this);");
+        input4.classList.add("btn-check")
+
+        label4 = document.createElement('label');
+        label4.classList.add("btn", "btn-outline-primary")
+        label4.setAttribute("for", "btnradio4")
+        label4Text = document.createTextNode("100%")
+        label4.appendChild(label4Text);
+
+
+
+
+        percentButtonDiv.appendChild(input1)
+        percentButtonDiv.appendChild(label1)
+        percentButtonDiv.appendChild(input2)
+        percentButtonDiv.appendChild(label2)
+        percentButtonDiv.appendChild(input3)
+        percentButtonDiv.appendChild(label3)
+        percentButtonDiv.appendChild(input4)
+        percentButtonDiv.appendChild(label4)
+        percentDiv.appendChild(percentButtonDiv)
+
+        orderPanel.appendChild(percentDiv)
+
+
+
+
+
+        break;
+    case "limit":
+        priceDiv = document.createElement('div');
+        priceDiv.classList.add('col-3');
+        priceInput = document.createElement('input');
+        priceInput.classList.add('form-control')
+        priceInput.setAttribute("name", "price");
+        priceInput.setAttribute("placeholder", "Price")
+        priceInput.setAttribute("type", "text")
+        priceInput.setAttribute("onkeyup", "handleTotal();")
+        priceDiv.appendChild(priceInput);
+        orderPanel.appendChild(priceDiv)
+
+
+        marginDiv = document.createElement('div');
+        marginDiv.classList.add('col-4')
+        marginInput = document.createElement('input');
+        marginInput.classList.add('form-control')
+        marginInput.setAttribute("name", "margin");
+        marginInput.setAttribute("placeholder", "Margin")
+        marginInput.setAttribute("type", "text")
+        marginInput.setAttribute("onkeyup", "handleTotal();")
+        marginDiv.appendChild(marginInput)
+        orderPanel.appendChild(marginDiv)
+
+        percentDiv = document.createElement('div');
+        percentDiv.classList.add('col-5')
+        percentButtonDiv = document.createElement('div')
+        percentButtonDiv.classList.add('btn-group', "btn-group-sm", "mt-1")
+        percentButtonDiv.setAttribute("role", "group");
+        percentButtonDiv.setAttribute("aria-label", "Basic radio toggle button group");
+
+
+
+        input1 = document.createElement('input')
+        input1.setAttribute("type", "radio");
+        input1.setAttribute("name", "btnradio");
+        input1.setAttribute("id", "btnradio1");
+        input1.setAttribute("autocomplete", "off");
+        input1.setAttribute("onClick", "handlePercent(this);");
+        input1.classList.add("btn-check")
+
+        label1 = document.createElement('label');
+        label1.classList.add("btn", "btn-outline-primary")
+        label1.setAttribute("for", "btnradio1")
+        label1Text = document.createTextNode("25%")
+        label1.appendChild(label1Text);
+
+
+        input2 = document.createElement('input')
+        input2.setAttribute("type", "radio");
+        input2.setAttribute("name", "btnradio");
+        input2.setAttribute("id", "btnradio2");
+        input2.setAttribute("autocomplete", "off");
+        input2.setAttribute("onClick", "handlePercent(this);");
+        input2.classList.add("btn-check")
+
+        label2 = document.createElement('label');
+        label2.classList.add("btn", "btn-outline-primary")
+        label2.setAttribute("for", "btnradio2")
+        label2Text = document.createTextNode("50%")
+        label2.appendChild(label2Text);
+
+        input3 = document.createElement('input')
+        input3.setAttribute("type", "radio");
+        input3.setAttribute("name", "btnradio");
+        input3.setAttribute("id", "btnradio3");
+        input3.setAttribute("autocomplete", "off");
+        input3.setAttribute("onClick", "handlePercent(this);");
+        input3.classList.add("btn-check")
+
+        label3 = document.createElement('label');
+        label3.classList.add("btn", "btn-outline-primary")
+        label3.setAttribute("for", "btnradio3")
+        label3Text = document.createTextNode("75%")
+        label3.appendChild(label3Text);
+
+        input4 = document.createElement('input')
+        input4.setAttribute("type", "radio");
+        input4.setAttribute("name", "btnradio");
+        input4.setAttribute("id", "btnradio4");
+        input4.setAttribute("autocomplete", "off");
+        input4.setAttribute("onClick", "handlePercent(this);");
+        input4.classList.add("btn-check")
+
+        label4 = document.createElement('label');
+        label4.classList.add("btn", "btn-outline-primary")
+        label4.setAttribute("for", "btnradio4")
+        label4Text = document.createTextNode("100%")
+        label4.appendChild(label4Text);
+
+
+
+
+        percentButtonDiv.appendChild(input1)
+        percentButtonDiv.appendChild(label1)
+        percentButtonDiv.appendChild(input2)
+        percentButtonDiv.appendChild(label2)
+        percentButtonDiv.appendChild(input3)
+        percentButtonDiv.appendChild(label3)
+        percentButtonDiv.appendChild(input4)
+        percentButtonDiv.appendChild(label4)
+        percentDiv.appendChild(percentButtonDiv)
+
+
+
+
+        orderPanel.appendChild(percentDiv)
+
+
+
+        break;
+    case "stopLimit":
+
+    stopDiv = document.createElement('div');
+        stopDiv.classList.add('col-3', 'offset-1');
+        stopInput = document.createElement('input');
+        stopInput.classList.add('form-control');
+        stopInput.setAttribute("name", "stop");
+        stopInput.setAttribute("placeholder", "Stop")
+        stopInput.setAttribute("type", "text")
+        // stopInput.setAttribute("onkeyup", "handleTotal();")
+        stopDiv.appendChild(stopInput);
+
+
+        limitDiv = document.createElement('div');
+        limitDiv.classList.add('col-3');
+        limitInput = document.createElement('input');
+        limitInput.classList.add('form-control');
+        limitInput.setAttribute("name", "limit");
+        limitInput.setAttribute("placeholder", "Limit")
+        limitInput.setAttribute("type", "text")
+        // limitInput.setAttribute("onkeyup", "handleTotal();")
+        limitDiv.appendChild(limitInput);
+
+
+
+    
+
+        marginDiv = document.createElement('div');
+        marginDiv.classList.add('col-3');
+        marginInput = document.createElement('input')
+        marginInput.classList.add('form-control');
+        marginInput.setAttribute("name", "margin");
+        marginInput.setAttribute("placeholder", "Margin")
+        marginInput.setAttribute("type", "text")
+        // marginInput.setAttribute("onkeyup", "handleTotal();")
+        marginDiv.appendChild(marginInput)
+        
+
+        percentDiv = document.createElement('div');
+        percentDiv.classList.add('col-6', 'offset-3')
+        percentButtonDiv = document.createElement('div')
+        percentButtonDiv.classList.add('btn-group', "btn-group-sm", "mt-2")
+        percentButtonDiv.setAttribute("role", "group");
+        percentButtonDiv.setAttribute("aria-label", "Basic radio toggle button group");
+        input1 = document.createElement('input')
+        input1.setAttribute("type", "radio");
+        input1.setAttribute("name", "btnradio");
+        input1.setAttribute("id", "btnradio1");
+        input1.setAttribute("autocomplete", "off");
+        input1.setAttribute("onClick", "handlePercent(this);");
+        input1.classList.add("btn-check")
+
+        label1 = document.createElement('label');
+        label1.classList.add("btn", "btn-outline-primary")
+        label1.setAttribute("for", "btnradio1")
+        label1Text = document.createTextNode("25%")
+        label1.appendChild(label1Text);
+
+
+        input2 = document.createElement('input')
+        input2.setAttribute("type", "radio");
+        input2.setAttribute("name", "btnradio");
+        input2.setAttribute("id", "btnradio2");
+        input2.setAttribute("autocomplete", "off");
+        input2.setAttribute("onClick", "handlePercent(this);");
+        input2.classList.add("btn-check")
+
+        label2 = document.createElement('label');
+        label2.classList.add("btn", "btn-outline-primary")
+        label2.setAttribute("for", "btnradio2")
+        label2Text = document.createTextNode("50%")
+        label2.appendChild(label2Text);
+
+        input3 = document.createElement('input')
+        input3.setAttribute("type", "radio");
+        input3.setAttribute("name", "btnradio");
+        input3.setAttribute("id", "btnradio3");
+        input3.setAttribute("autocomplete", "off");
+        input3.setAttribute("onClick", "handlePercent(this);");
+        input3.classList.add("btn-check")
+
+        label3 = document.createElement('label');
+        label3.classList.add("btn", "btn-outline-primary")
+        label3.setAttribute("for", "btnradio3")
+        label3Text = document.createTextNode("75%")
+        label3.appendChild(label3Text);
+
+        input4 = document.createElement('input')
+        input4.setAttribute("type", "radio");
+        input4.setAttribute("name", "btnradio");
+        input4.setAttribute("id", "btnradio4");
+        input4.setAttribute("autocomplete", "off");
+        input4.setAttribute("onClick", "handlePercent(this);");
+        input4.classList.add("btn-check")
+
+        label4 = document.createElement('label');
+        label4.classList.add("btn", "btn-outline-primary")
+        label4.setAttribute("for", "btnradio4")
+        label4Text = document.createTextNode("100%")
+        label4.appendChild(label4Text);
+
+
+
+
+        percentButtonDiv.appendChild(input1)
+        percentButtonDiv.appendChild(label1)
+        percentButtonDiv.appendChild(input2)
+        percentButtonDiv.appendChild(label2)
+        percentButtonDiv.appendChild(input3)
+        percentButtonDiv.appendChild(label3)
+        percentButtonDiv.appendChild(input4)
+        percentButtonDiv.appendChild(label4)
+        percentDiv.appendChild(percentButtonDiv)
+
+
+
+        orderPanel.appendChild(stopDiv)  
+        orderPanel.appendChild(limitDiv)
+        orderPanel.appendChild(marginDiv)
+        orderPanel.appendChild(percentDiv)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        break;
+    case "trailingStop":
+        console.log("trailing stop order");
+        break;
+    case "trailingStopLoss":
+        console.log("trailing stop loss order")
+        break;
+    default: 
+        console.log("default order")
+        break;
+    }
+}
+
+checkSymbol = () => {
+    let symbol = document.querySelector('input[name="symbol"]').value.toUpperCase();
+    fetch(`http://${window.location.hostname}:${window.location.port}/orders/checkSymbol`, {
+    method: 'post',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ symbol })
+    })
+    .then(res => res.json())
+    .then(data => {
+    let { status } = data;
+    if(status){
+        document.querySelector(`input[name="symbol"]`).classList.remove('border-danger', 'border-3')
+        let { percision } = data
+        orderPercision = percision;
+        if(orderSide == "sell"){
+            let { balance, available, percision } = data
+            availableCurrency = parseFloat(available);
+            document.getElementById('availableVolume').innerText = math.format(available, 5).slice(1, -1)  //Math.round(parseFloat(available) * 100000) / 100000
+            document.getElementById('availableCurrency').innerText = symbol;
+        }
+    }else{
+        let { message } = data
+        alert(message)
+        document.querySelector(`input[name="symbol"]`).classList.add('border-danger', 'border-3')
+        // console.log(message)
+    }
+    })
+    orderSymbol = symbol;    
+}
+
+getBalance = async () => {
+    fetch(`http://${window.location.hostname}:${window.location.port}/orders/getBalance`)
+    .then(res => res.json())
+    .then(data => {
+    let { status, available } = data;
+    availableCurrency = available;
+    document.getElementById('availableVolume').innerText = available;
+    document.getElementById('availableCurrency').innerText = "USDT";
+    }).catch(err => console.log(err))
+    // if(window.location.pathname.split('/')[1] == "asset" && window.location.pathname.split('/')[2] == "view"){
+    //     let symbol = window.location.pathname.split('/')[3]
+    //     document.getElementById('symbol').value= symbol
+    //     checkSymbol();
+    // }
+}
+
+toggleSide = (side) =>{
+    orderSide = side;
+    if(side == "buy"){
+    let buttons = document.querySelectorAll('.sideButton')
+    getBalance();
+    buttons[0].classList.add("btn-success")
+    buttons[0].classList.remove("btn-secondary")
+    buttons[1].classList.remove("btn-danger")
+    buttons[1].classList.add("btn-secondary")
+    document.getElementById("executeOrder").innerText = "Buy"
+    document.getElementById("executeOrder").classList.add("btn-success");
+    document.getElementById("executeOrder").classList.remove("btn-danger");
+    if(orderSymbol != ""){
+        checkSymbol();
+    }
+    let infoPanel = document.querySelector('#info');
+    while (infoPanel.firstChild)
+        infoPanel.removeChild(infoPanel.firstChild);
+    }else{
+    let buttons = document.querySelectorAll('.sideButton')
+    buttons[1].classList.add("btn-danger")
+    buttons[1].classList.remove("btn-secondary")
+    buttons[0].classList.add("btn-secondary")
+    buttons[0].classList.remove("btn-success")
+    document.getElementById("executeOrder").innerText = "Sell"
+    document.getElementById("executeOrder").classList.add("btn-danger");
+    document.getElementById("executeOrder").classList.remove("btn-success");
+    if(orderSymbol != ""){
+        checkSymbol();
+    }
+    let infoPanel = document.querySelector('#info');
+    while (infoPanel.firstChild)
+        infoPanel.removeChild(infoPanel.firstChild);
+    }
+}
+toggleSide(orderSide);
+</script>
+
+
+
+
+

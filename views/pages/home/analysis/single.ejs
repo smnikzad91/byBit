@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <%- include('./../../../partials/home/seo'); %>
+    <%- include('./../../../partials/home/styles'); %>
+    <title>صفحه اصلی-شایان نیکزاد</title>
+</head>
+
+<body>
+    <%- include('./../../../partials/home/nav'); %>
+
+
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <ul class="breadcrumb">
+                    <li><a href="https://shayannikzad.ir/">صفحه نخست</a></li>
+                    <li><a href="https://shayannikzad.ir/analyses">تحلیل ها</a></li>
+                    <li><%= analysis.title %></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="page-content page-article-view">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="post-view-box page-des">
+                        <div class="image"><img src="<%= analysis.imageUrl %>" alt="<%= analysis.title %>"></div>
+                        <div class="date"><%= analysis.date %></div>
+                        <h1 class="title"><%= analysis.title %></h1>
+                        <p><%= analysis.description %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <%- include('./../../../partials/home/footer'); %>
+    <%- include('./../../../partials/home/scripts'); %>
+</body>
+
+</html>

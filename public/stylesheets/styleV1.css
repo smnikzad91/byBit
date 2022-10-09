@@ -1,0 +1,18 @@
+@font-face {
+  font-family: 'Yekan';
+  src: url('https://shayannikzad.ir/stylesheets/fonts/Yekan.eot'), /* IE9 Compat Modes */
+       url('https://shayannikzad.ir/stylesheets/fonts/Yekan.woff') format('woff'), /* Pretty Modern Browsers */
+       url('https://shayannikzad.ir/stylesheets/fonts/Yekan.ttf')  format('truetype'); /* Safari, Android, iOS */
+}
+
+
+body {
+  
+  margin: 0;
+  padding: 0;
+  text-align: right;
+  font-family: Yekan !important;
+}
+p {
+  font-size: 25px;
+}

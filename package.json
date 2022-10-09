@@ -1,0 +1,41 @@
+{
+  "name": "bybit",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "bcrypt": "^5.0.1",
+    "bybit-api": "^2.2.2",
+    "cookie-parser": "~1.4.4",
+    "cron": "^2.0.0",
+    "cross-fetch": "^3.1.5",
+    "crypto": "^1.0.1",
+    "csurf": "^1.11.0",
+    "debug": "~2.6.9",
+    "dotenv": "^16.0.3",
+    "ejs": "~2.6.1",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "ichimoku": "^1.0.4",
+    "jalali-moment": "^3.3.11",
+    "jsonwebtoken": "^8.5.1",
+    "mathjs": "^10.6.4",
+    "moment": "^2.29.4",
+    "mongoose": "^6.4.4",
+    "morgan": "~1.9.1",
+    "mosca": "^2.8.3",
+    "node-cron": "^3.0.1",
+    "node-dev": "^7.4.3",
+    "node-fetch": "^3.2.10",
+    "node-telegram-bot-api": "^0.58.0",
+    "nodemon": "^2.0.19",
+    "redis": "^4.2.0",
+    "redis-om": "^0.3.6",
+    "request": "^2.88.2",
+    "technicalindicators": "^3.1.0",
+    "validator": "^13.7.0"
+  }
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trades</title>
+    <% include ./../partials/user/styles %>
+    <style>
+        .bg-red{
+            background-color: red !important;
+        }
+        .bg-green{
+            background-color: green !important;
+        }
+
+        .bg-transition {
+            transition: background-color 500ms !important;
+        }
+    </style>
+</head>
+
+<body>
+    <% include ./../partials/user/navbar %>
+
+
+    <div class="container-fluid mt-5 table-responsive">
+        <table id="myTable" class="table table-sm table-hover table-dark mt-2 text-center ">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Symbol</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Side</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Volume</th>
+                    <th scope="col">$Total</th>
+                    <th scope="col">P Date</th>
+                    <th scope="col">G Date</th>
+                    <th scope="col">Time</th>
+                </tr>
+            </thead>
+            <tbody class="">
+                <tbody class="">
+                    <% trades.forEach((trade, index) => {  %>
+                    <tr>
+                        <th><%= ++index %></th>
+                        <td><%= trade.symbol.split('-')[0] %></td>              
+                        <td><%= trade.price %></td>
+                        <td><%= trade.side %></td>              
+                        <td><%= trade.orderType %></td>              
+                        <td><%= trade.size %></td>              
+                        <td><%= Math.round( trade.size * trade.price * 100 ) / 100 %></td>
+                        <td><%= trade.persianYear + '/' + trade.persianMonth + '/' + trade.persianDay %></td>
+                        <td><%= trade.gregorianYear + '/' + trade.gregorianMonth + '/' + trade.gregorianDay %></td>
+                        <td><%= trade.hour + ':' + trade.minute + ':' + trade.second %></td>
+                    </tr>
+                    <% }) %>
+                    </tbody>
+            </tbody>
+        </table>
+    </div>
+
+
+    <% include ./../partials/user/scripts %>
+</body>
