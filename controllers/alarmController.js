@@ -8,6 +8,22 @@ const kline        = require('./../libs/analyses/kline')
 const Setting      = require('./../models/Setting')
 const {multiply, divide, format, pow, subtract, log, add, largerEq, smallerEq, smaller, fraction} = require('mathjs');
 
+exports.checkAlarm_ = async ()=>{
+
+    let alarms = await Alarm.find().lean()
+    let alarmsLength = alarms.length;
+
+    for (const alarm of alarms ){
+        let { symbol, price, condition, _id, isEnabled, shouldCall, shouldMessage, type } = await alarm
+        console.log(alarm)
+        let {lastPrice} = await bybit.getLastPrice(symbol)
+
+   }
+    
+
+}
+
+
 exports.checkAlarm = async () => {
     let alarms = await Alarm.find().lean()
     let alarmsLength = alarms.length;
