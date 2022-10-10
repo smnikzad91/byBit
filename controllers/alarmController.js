@@ -11,7 +11,9 @@ const {multiply, divide, format, pow, subtract, log, add, largerEq, smallerEq, s
 exports.checkAlarm = async () => {
     let alarms = await Alarm.find().lean()
     let alarmsLength = alarms.length;
-    alarms.forEach(async (alarm, index) => {
+    // alarms.forEach(async (alarm, index) => {
+    let index = 0;
+    for(let alarm of alarms){
         let { symbol, price, condition, _id, isEnabled, shouldCall, shouldMessage, type } = await alarm
         console.log(alarm)
         let {lastPrice} = await bybit.getLastPrice(symbol)
@@ -66,17 +68,19 @@ exports.checkAlarm = async () => {
                 }                           
             }
         }
+        index++;
         if(index == alarmsLength - 1){                
             setTimeout(() => {
                 // console.log("static")
                 this.checkAlarm();
             }, 300)
         }
-    })
+    // })
+    }
 }
 
 setTimeout(() => {
-    global.shouldTrade = true;
+    // global.shouldTrade = true;
     this.checkAlarm();
 }, 3000)
 

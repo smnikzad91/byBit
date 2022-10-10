@@ -33,7 +33,10 @@ setTimeout(async () => {
 
 exports.checkAlarmNew = async  () => {
     let alarms = await Ichimoku.find().lean()
-    alarms.forEach(async (alarm, index) => {
+    let alarmsLength = alarms.length;
+    let index = 0;
+    for(let alarm of alarms){
+    // alarms.forEach(async (alarm, index) => {
         let { symbol, element, condition, interval, _id, type, buffer } = await alarm
         console.log(alarm)
         if(!buffer){
@@ -104,14 +107,16 @@ exports.checkAlarmNew = async  () => {
         }else{
             console.log("nothing to do from alarm file")
         }                    
-        if(index == alarms.length - 1){
+        index++;
+        if(index == alarmsLength - 1){
             setTimeout(() => {
                 // console.log("dynamic")
                 this.checkAlarmNew();
             }, 300)
         }
-    })     
+    // })     
     
+    }
 }
 
 
