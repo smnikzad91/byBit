@@ -8,7 +8,7 @@ const exchange      = require('./libs/exchange/bybit')
 const { checkUser } = require('./middlewares/authMiddleware')
 require('dotenv').config()
 
-// exchange.fillDatabase();
+exchange.fillDatabase();
 global.saveKline = true; 
 // global.shouldTrade = false;
 // global.saveKline = false;

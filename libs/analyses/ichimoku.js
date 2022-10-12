@@ -34,11 +34,11 @@ setTimeout(async () => {
 exports.checkAlarmNew = async  () => {
     let alarms = await Ichimoku.find().lean()
     let alarmsLength = alarms.length;
-    let index = 0;
-    for(let alarm of alarms){
-    // alarms.forEach(async (alarm, index) => {
+    // let index = 0;
+    // for(let alarm of alarms){
+    alarms.forEach(async (alarm, index) => {
         let { symbol, element, condition, interval, _id, type, buffer } = await alarm
-        console.log(alarm)
+        // console.log(alarm)
         if(!buffer){
             buffer = 0;
         }
@@ -107,22 +107,22 @@ exports.checkAlarmNew = async  () => {
         }else{
             console.log("nothing to do from alarm file")
         }                    
-        index++;
+        // index++;
         if(index == alarmsLength - 1){
             setTimeout(() => {
                 // console.log("dynamic")
                 this.checkAlarmNew();
-            }, 300)
+            }, 310)
         }
-    // })     
+    })     
     
-    }
+    // }
 }
 
 
-setTimeout(() => {
-    this.checkAlarmNew();
-}, 3100)
+setInterval(() => {
+    // this.checkAlarmNew();
+}, 1000)
 
 
 getParams = async (symbol, period) => {
@@ -450,3 +450,5 @@ cron.schedule('13 30 * * * *', async () => {
 
 //   })
 // }, 5000);
+
+

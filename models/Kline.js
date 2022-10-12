@@ -6,12 +6,12 @@ const klineSchema = new mongoose.Schema({
     end: String,
     period: String,
     symbol: String,
-    open: String,
-    close: String,
-    high: String,
-    low: String,
-    volume: String,
-    turnover: String,
+    open: Number,
+    close: Number,
+    high: Number,
+    low: Number,
+    volume: Number,
+    turnover: Number,
     cross_seq: String,
     confirm: String
 })

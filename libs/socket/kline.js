@@ -27,9 +27,9 @@ client.on('open', async function () {
     let symbols = await Symbol.find();
     let argsArray = []
     symbols.forEach(symbol => {
-        argsArray.push(`candle.5.${symbol.name}`)
-        argsArray.push(`candle.30.${symbol.name}`)
-        argsArray.push(`candle.240.${symbol.name}`)
+        argsArray.push(`candle.${interval.short}.${symbol.name}`)
+        argsArray.push(`candle.${interval.trade}.${symbol.name}`)
+        argsArray.push(`candle.${interval.long}.${symbol.name}`)
     });
 	client.send(JSON.stringify({"op": "subscribe", "args": argsArray}));
 });

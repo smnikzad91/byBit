@@ -27,11 +27,11 @@ exports.checkAlarm_ = async ()=>{
 exports.checkAlarm = async () => {
     let alarms = await Alarm.find().lean()
     let alarmsLength = alarms.length;
-    // alarms.forEach(async (alarm, index) => {
-    let index = 0;
-    for(let alarm of alarms){
+    alarms.forEach(async (alarm, index) => {
+    // let index = 0;
+    // for(let alarm of alarms){
         let { symbol, price, condition, _id, isEnabled, shouldCall, shouldMessage, type } = await alarm
-        console.log(alarm)
+        // console.log(alarm)
         let {lastPrice} = await bybit.getLastPrice(symbol)
         if(condition === "below"){
             if(parseFloat(lastPrice) <= parseFloat(price)){
@@ -84,20 +84,19 @@ exports.checkAlarm = async () => {
                 }                           
             }
         }
-        index++;
         if(index == alarmsLength - 1){                
             setTimeout(() => {
                 // console.log("static")
                 this.checkAlarm();
             }, 300)
         }
-    // })
-    }
+    })
+    // }
 }
 
 setTimeout(() => {
     // global.shouldTrade = true;
-    this.checkAlarm();
+    // this.checkAlarm();
 }, 3000)
 
 

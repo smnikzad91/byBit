@@ -1,0 +1,6 @@
+--2022-10-12 07:55:58--  https://api.bybit.com/public/linear/kline?symbol=ENJUSDT
+Resolving api.bybit.com (api.bybit.com)... 80.239.150.32, 80.239.150.26
+Connecting to api.bybit.com (api.bybit.com)|80.239.150.32|:443... connected.
+HTTP request sent, awaiting response... 403 Forbidden
+2022-10-12 07:55:58 ERROR 403: Forbidden.
+
