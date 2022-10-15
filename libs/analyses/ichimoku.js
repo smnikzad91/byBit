@@ -42,71 +42,76 @@ exports.checkAlarmNew = async  () => {
         if(!buffer){
             buffer = 0;
         }
-        let { lastPrice } = await bybit.getLastPrice(symbol)
-        let { maxLeverage } = await bybit.getIncrements(symbol)
-        let params = await this.getLastParam(symbol, timeframes[interval], 120)
-        let elementPrice = params[element]
-        if(condition == "below"){
-            if(smallerEq(parseFloat(lastPrice), add(parseFloat(elementPrice), divide(multiply(parseFloat(buffer), parseFloat(elementPrice)), 100)))){
-                await Ichimoku.findByIdAndDelete(_id)
-                let positionInfo = await kline.calculatePositionParameters(symbol, "buy")
-                let { callbackRate, stopLossStopPrice, stopLossLimitPrice, activationPrice, highPercent, lowPercent, longR2R, shortR2R } = positionInfo
-                console.log(`${symbol} is ${condition} ${element} ${timeframes[interval]} price: ${lastPrice} buffer: ${buffer} ${type}\n stop:${stopLossStopPrice}, limit: ${stopLossLimitPrice}, activationPrice: ${activationPrice} callbackRate: ${callbackRate} low: ${lowPercent} shortR2R: ${longR2R}`)
-                leverage = Math.ceil(divide(lossPercentage, callbackRate)) * 4;
-                if(largerEq(leverage, maxLeverage)){
-                    leverage = maxLeverage;
+        let { lastPrice, status } = await bybit.getLastPrice(symbol)
+        if(status){
+            let { maxLeverage } = await bybit.getIncrements(symbol)
+            let params = await this.getLastParam(symbol, timeframes[interval], 120)
+            if(params.status){
+                let elementPrice = params[element]
+                if(condition == "below"){
+                    if(smallerEq(parseFloat(lastPrice), add(parseFloat(elementPrice), divide(multiply(parseFloat(buffer), parseFloat(elementPrice)), 100)))){
+                        await Ichimoku.findByIdAndDelete(_id)
+                        let positionInfo = await kline.calculatePositionParameters(symbol, "buy")
+                        let { callbackRate, stopLossStopPrice, stopLossLimitPrice, activationPrice, highPercent, lowPercent, longR2R, shortR2R } = positionInfo
+                        console.log(`${symbol} is ${condition} ${element} ${timeframes[interval]} price: ${lastPrice} buffer: ${buffer} ${type}\n stop:${stopLossStopPrice}, limit: ${stopLossLimitPrice}, activationPrice: ${activationPrice} callbackRate: ${callbackRate} low: ${lowPercent} shortR2R: ${longR2R}`)
+                        leverage = Math.ceil(divide(lossPercentage, callbackRate)) * 4;
+                        if(largerEq(leverage, maxLeverage)){
+                            leverage = maxLeverage;
+                        }
+                        if(type != "manual"){
+                            telegram.sendSignal(symbol, "buy", lastPrice, stopLossStopPrice, stopLossLimitPrice, activationPrice, callbackRate, longR2R, shortR2R, buffer, leverage, activationPrice)
+                            // buy request
+                            // console.log("is signal")
+                            // assist.sendMessage("09119100991", `${symbol} position started !`)
+                            // assist.makeCall("09119100991");
+                            // let { qty } = await kline.getQty(symbol, positionMargin, leverage)
+                            // console.log(qty)
+                            // await bybit.setLeverage(symbol, leverage)
+                            // await bybit.marketBuy(symbol, qty, activationPrice)
+                            // setTimeout(async () => {
+                                // await bybit.setTrailingStop(symbol, "Buy", callbackRate)
+                            // }, 1000)
+                        }else{
+                        //     console.log("not signal")
+                            telegram.sendAdminMessage(JSON.stringify({ symbol, element, condition, interval, buffer, _id, type }))
+                        }
+                        // await Position.create({ side: "buy", symbol, entry: lastPrice, stop: stopLossStopPrice, limit: stopLossLimitPrice, activation: activationPrice, callbackRate })                                                           
+                    }
+                }else if(condition == "above"){
+                    if(largerEq(parseFloat(lastPrice), subtract(parseFloat(elementPrice), divide(multiply(parseFloat(buffer), parseFloat(elementPrice)), 100)))){
+                        await Ichimoku.findByIdAndDelete(_id)
+                        let positionInfo = await kline.calculatePositionParameters(symbol, "sell")
+                        let { callbackRate, stopLossStopPrice, stopLossLimitPrice, activationPrice, highPercent, lowPercent, longR2R, shortR2R } = positionInfo
+                        leverage = Math.ceil(divide(lossPercentage, callbackRate)) * 4;
+                        if(largerEq(leverage, maxLeverage)){
+                            leverage = maxLeverage;
+                        }
+                        console.log(`${symbol} is ${condition} ${element} ${timeframes[interval]} price: ${lastPrice} buffer: ${buffer} ${type}\n stop:${stopLossStopPrice}, limit: ${stopLossLimitPrice}, activationPrice: ${activationPrice} callbackRate: ${callbackRate} low: ${lowPercent} shortR2R: ${shortR2R}`)
+                        if(type != "manual"){
+                            telegram.sendSignal(symbol, "sell", lastPrice, stopLossStopPrice, stopLossLimitPrice, activationPrice, callbackRate, longR2R, shortR2R, buffer, leverage, activationPrice)
+                            //sell request
+                            // console.log("is signal")
+                            // assist.sendMessage("09119100991", `${symbol} position started !`)
+                            // assist.makeCall("09119100991");
+                            // let { qty } = await kline.getQty(symbol, positionMargin, leverage)
+                            // console.log(qty)
+                            // await bybit.setLeverage(symbol, leverage)
+                            // await bybit.marketSell(symbol, qty, activationPrice)
+                            // setTimeout(async () => {
+                                // await bybit.setTrailingStop(symbol, "Sell", callbackRate)
+                            // }, 1000)
+                        }else{
+                        //     console.log("not signal")
+                            telegram.sendAdminMessage(JSON.stringify({ symbol, element, condition, interval, buffer, _id, type }))
+                        }
+                        // await Position.create({ side: "sell", symbol, entry: lastPrice, stop: stopLossStopPrice, limit: stopLossLimitPrice, activation: activationPrice, callbackRate })                                                              
+                    }
                 }
-                if(type != "manual"){
-                    telegram.sendSignal(symbol, "buy", lastPrice, stopLossStopPrice, stopLossLimitPrice, activationPrice, callbackRate, longR2R, shortR2R, buffer, leverage, activationPrice)
-                    // buy request
-                    // console.log("is signal")
-                    // assist.sendMessage("09119100991", `${symbol} position started !`)
-                    // assist.makeCall("09119100991");
-                    // let { qty } = await kline.getQty(symbol, positionMargin, leverage)
-                    // console.log(qty)
-                    // await bybit.setLeverage(symbol, leverage)
-                    // await bybit.marketBuy(symbol, qty, activationPrice)
-                    // setTimeout(async () => {
-                        // await bybit.setTrailingStop(symbol, "Buy", callbackRate)
-                    // }, 1000)
-                }else{
-                //     console.log("not signal")
-                    telegram.sendAdminMessage(JSON.stringify({ symbol, element, condition, interval, buffer, _id, type }))
-                }
-                // await Position.create({ side: "buy", symbol, entry: lastPrice, stop: stopLossStopPrice, limit: stopLossLimitPrice, activation: activationPrice, callbackRate })                                                           
-            }
-        }else if(condition == "above"){
-            if(largerEq(parseFloat(lastPrice), subtract(parseFloat(elementPrice), divide(multiply(parseFloat(buffer), parseFloat(elementPrice)), 100)))){
-                await Ichimoku.findByIdAndDelete(_id)
-                let positionInfo = await kline.calculatePositionParameters(symbol, "sell")
-                let { callbackRate, stopLossStopPrice, stopLossLimitPrice, activationPrice, highPercent, lowPercent, longR2R, shortR2R } = positionInfo
-                leverage = Math.ceil(divide(lossPercentage, callbackRate)) * 4;
-                if(largerEq(leverage, maxLeverage)){
-                    leverage = maxLeverage;
-                }
-                console.log(`${symbol} is ${condition} ${element} ${timeframes[interval]} price: ${lastPrice} buffer: ${buffer} ${type}\n stop:${stopLossStopPrice}, limit: ${stopLossLimitPrice}, activationPrice: ${activationPrice} callbackRate: ${callbackRate} low: ${lowPercent} shortR2R: ${shortR2R}`)
-                if(type != "manual"){
-                    telegram.sendSignal(symbol, "sell", lastPrice, stopLossStopPrice, stopLossLimitPrice, activationPrice, callbackRate, longR2R, shortR2R, buffer, leverage, activationPrice)
-                    //sell request
-                    // console.log("is signal")
-                    // assist.sendMessage("09119100991", `${symbol} position started !`)
-                    // assist.makeCall("09119100991");
-                    // let { qty } = await kline.getQty(symbol, positionMargin, leverage)
-                    // console.log(qty)
-                    // await bybit.setLeverage(symbol, leverage)
-                    // await bybit.marketSell(symbol, qty, activationPrice)
-                    // setTimeout(async () => {
-                        // await bybit.setTrailingStop(symbol, "Sell", callbackRate)
-                    // }, 1000)
-                }else{
-                //     console.log("not signal")
-                    telegram.sendAdminMessage(JSON.stringify({ symbol, element, condition, interval, buffer, _id, type }))
-                }
-                // await Position.create({ side: "sell", symbol, entry: lastPrice, stop: stopLossStopPrice, limit: stopLossLimitPrice, activation: activationPrice, callbackRate })                                           
-            }
-        }else{
-            console.log("nothing to do from alarm file")
-        }                    
+            }else{
+                console.log("nothing to do from alarm file")
+            }   
+        }
+                 
         // index++;
         if(index == alarmsLength - 1){
             setTimeout(() => {
@@ -127,67 +132,72 @@ setInterval(() => {
 
 getParams = async (symbol, period) => {
     let count = 120
-    let { klines } = await bybit.getLocalKlines(symbol, period, count)
-    let {hArray, lArray} = klines;
-    let tenkansenArray=[], kijunsenArray=[], senkouBArray=[], senkouAArray= [];
-    let periodMin, periodMax;
-    for(let i = count-1; i >= 9; i--){
-        periodMin=100000; periodMax=0;
-        for(let j = i; j >= (i - 9); j--){
-            let candleHigh = parseFloat(hArray[j])
-            let candleMin = parseFloat(lArray[j])
-            if(candleHigh > periodMax){
-                periodMax = candleHigh;
+    let { klines, status } = await bybit.getLocalKlines(symbol, period, count)
+    if(status){
+        let {hArray, lArray} = klines;
+        let tenkansenArray=[], kijunsenArray=[], senkouBArray=[], senkouAArray= [];
+        let periodMin, periodMax;
+        for(let i = count-1; i >= 9; i--){
+            periodMin=100000; periodMax=0;
+            for(let j = i; j >= (i - 9); j--){
+                let candleHigh = parseFloat(hArray[j])
+                let candleMin = parseFloat(lArray[j])
+                if(candleHigh > periodMax){
+                    periodMax = candleHigh;
+                }
+                if(candleMin < periodMin){
+                    periodMin = candleMin
+                }
             }
-            if(candleMin < periodMin){
-                periodMin = candleMin
-            }
+            let tenkansen = (periodMax + periodMin) / 2;
+            tenkansen = Math.round(tenkansen * Math.pow(10, 8)) / Math.pow(10, 8)
+            tenkansenArray.push(tenkansen)
         }
-        let tenkansen = (periodMax + periodMin) / 2;
-        tenkansen = Math.round(tenkansen * Math.pow(10, 8)) / Math.pow(10, 8)
-        tenkansenArray.push(tenkansen)
-    }
-    for(let i = count-1; i >= 29; i--){
-        periodMin=100000; periodMax=0;
-        for(let j = i; j >= (i - 29); j--){
-            let candleHigh = parseFloat(hArray[j])
-            let candleMin = parseFloat(lArray[j])
-            if(candleHigh > periodMax){
-                periodMax = candleHigh;
+        for(let i = count-1; i >= 29; i--){
+            periodMin=100000; periodMax=0;
+            for(let j = i; j >= (i - 29); j--){
+                let candleHigh = parseFloat(hArray[j])
+                let candleMin = parseFloat(lArray[j])
+                if(candleHigh > periodMax){
+                    periodMax = candleHigh;
+                }
+                if(candleMin < periodMin){0.702
+                    periodMin = candleMin
+                }
             }
-            if(candleMin < periodMin){0.702
-                periodMin = candleMin
-            }
+            let kijunsen = (periodMax + periodMin) / 2;
+            kijunsen = Math.round(kijunsen * Math.pow(10, 8)) / Math.pow(10, 8)
+            kijunsenArray.push(kijunsen)
         }
-        let kijunsen = (periodMax + periodMin) / 2;
-        kijunsen = Math.round(kijunsen * Math.pow(10, 8)) / Math.pow(10, 8)
-        kijunsenArray.push(kijunsen)
-    }
-    for(let i = count-1; i >= 59; i--){
-        periodMin=100000; periodMax=0;
-        for(let j = i; j >= (i - 59); j--){
-            let candleHigh = parseFloat(hArray[j])
-            let candleMin = parseFloat(lArray[j])
-            if(candleHigh > periodMax){
-                periodMax = candleHigh;
+        for(let i = count-1; i >= 59; i--){
+            periodMin=100000; periodMax=0;
+            for(let j = i; j >= (i - 59); j--){
+                let candleHigh = parseFloat(hArray[j])
+                let candleMin = parseFloat(lArray[j])
+                if(candleHigh > periodMax){
+                    periodMax = candleHigh;
+                }
+                if(candleMin < periodMin){
+                    periodMin = candleMin
+                }
             }
-            if(candleMin < periodMin){
-                periodMin = candleMin
-            }
+            let senkouB = (periodMax + periodMin) / 2;
+            senkouB = Math.round(senkouB * Math.pow(10, 8)) / Math.pow(10, 8)
+            senkouBArray.push(senkouB)
         }
-        let senkouB = (periodMax + periodMin) / 2;
-        senkouB = Math.round(senkouB * Math.pow(10, 8)) / Math.pow(10, 8)
-        senkouBArray.push(senkouB)
+        tenkansenArray = tenkansenArray.reverse();
+        kijunsenArray = kijunsenArray.reverse();
+        kijunsenArray.forEach((item, index) => {
+            let senkouA = (item + tenkansenArray[index]) / 2
+            senkouA = Math.round(senkouA * Math.pow(10, 8)) / Math.pow(10, 8)
+            senkouAArray.push(senkouA)
+        })  
+        senkouBArray = senkouBArray.reverse();
+        return { status: true, tenkansenArray, kijunsenArray, senkouAArray, senkouBArray}  
+    }else{
+        return { status: false }
     }
-    tenkansenArray = tenkansenArray.reverse();
-    kijunsenArray = kijunsenArray.reverse();
-    kijunsenArray.forEach((item, index) => {
-        let senkouA = (item + tenkansenArray[index]) / 2
-        senkouA = Math.round(senkouA * Math.pow(10, 8)) / Math.pow(10, 8)
-        senkouAArray.push(senkouA)
-    })  
-    senkouBArray = senkouBArray.reverse();
-    return {tenkansenArray, kijunsenArray, senkouAArray, senkouBArray}        
+      
 }
 
 getFlatZone = async (symbol, period, element, length) => {

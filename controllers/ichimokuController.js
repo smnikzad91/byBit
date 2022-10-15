@@ -21,7 +21,13 @@ exports.getTest = async (req, res) => {
 
 exports.getLastParam = async (req, res) => {
     let { symbol, period } = req.query
-    let params = await ichimoku.getLastParam(symbol, period)
+    try{
+        let params = await ichimoku.getLastParam(symbol, period)
+        res.json({ status: true, params })
 
-    res.json({ status: true, params })
+    }catch(err){
+        console.log(err)
+        res.json({ status: false })
+    }
+
 }

@@ -1,5 +1,6 @@
 const { boolean } = require('mathjs')
 const mongoose = require('mongoose')
+
 const alarmSchema = new mongoose.Schema({
     symbol: String,
     condition: String,
@@ -10,4 +11,5 @@ const alarmSchema = new mongoose.Schema({
     isEnabled: boolean,
 }, { timestamps: true })
 
-module.exports = mongoose.model("alarms", alarmSchema)
+let Task = mongoose.model("alarms", alarmSchema)
+module.exports = Task

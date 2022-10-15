@@ -32,58 +32,61 @@ exports.checkAlarm = async () => {
     // for(let alarm of alarms){
         let { symbol, price, condition, _id, isEnabled, shouldCall, shouldMessage, type } = await alarm
         // console.log(alarm)
-        let {lastPrice} = await bybit.getLastPrice(symbol)
-        if(condition === "below"){
-            if(parseFloat(lastPrice) <= parseFloat(price)){
-                await Alarm.findByIdAndDelete(_id)
-                await AlarmHistory.create({ symbol, condition, price, isEnabled, shouldCall, shouldMessage, type  })
-                if(type === "manual"){
-                    console.log(`${symbol} is ${condition} ${price} type: manual`)
-                    telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: ${type}`)
-                }else if(type === "static"){
-                    console.log(`${symbol} is ${condition} ${price} type: ${type}`)
-                    telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: static`)
-                    Ichimoku.find({ symbol }, (err, result) => {
-                        if(!result.length){
-                            let interval;
-                            if(type == "static"){
-                                interval = "long"
-                            }else if(type == "dynamic"){
-                                interval = "short"
+        let {lastPrice, status} = await bybit.getLastPrice(symbol)
+        if(status){
+            if(condition === "below"){
+                if(parseFloat(lastPrice) <= parseFloat(price)){
+                    await Alarm.findByIdAndDelete(_id)
+                    await AlarmHistory.create({ symbol, condition, price, isEnabled, shouldCall, shouldMessage, type  })
+                    if(type === "manual"){
+                        console.log(`${symbol} is ${condition} ${price} type: manual`)
+                        telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: ${type}`)
+                    }else if(type === "static"){
+                        console.log(`${symbol} is ${condition} ${price} type: ${type}`)
+                        telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: static`)
+                        Ichimoku.find({ symbol }, (err, result) => {
+                            if(!result.length){
+                                let interval;
+                                if(type == "static"){
+                                    interval = "long"
+                                }else if(type == "dynamic"){
+                                    interval = "short"
+                                }
+                                kline.getBuffer(symbol).then(( { buffer } ) => {
+                                    Ichimoku.create({ symbol, condition: "above", element: "tenkansen", interval, type, buffer })
+                                })
                             }
-                            kline.getBuffer(symbol).then(( { buffer } ) => {
-                                Ichimoku.create({ symbol, condition: "above", element: "tenkansen", interval, type, buffer })
-                            })
-                        }
-                    })
-                }                           
-            }
-        }else if(condition === "above"){
-            if(largerEq(parseFloat(lastPrice) , parseFloat(price))){
-                await Alarm.findByIdAndDelete(_id)
-                await AlarmHistory.create({ symbol, condition, price, shouldCall, shouldMessage, type })
-                if(type == "manual"){
-                    console.log(`${symbol} is ${condition} ${price} type: ${type}`)
-                    telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: ${type}`)
-                }else if( type == "static" ){
-                    console.log(`${symbol} is ${condition} ${price} type: ${type}`)
-                    telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: ${type}`)
-                    Ichimoku.find({ symbol }, (err, result) => {
-                        if(!result.length){
-                            let interval;
-                            if(type == "static"){
-                                interval = "long"
-                            }else if(type == "dynamic"){
-                                interval = "short"
+                        })
+                    }                           
+                }
+            }else if(condition === "above"){
+                if(largerEq(parseFloat(lastPrice) , parseFloat(price))){
+                    await Alarm.findByIdAndDelete(_id)
+                    await AlarmHistory.create({ symbol, condition, price, shouldCall, shouldMessage, type })
+                    if(type == "manual"){
+                        console.log(`${symbol} is ${condition} ${price} type: ${type}`)
+                        telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: ${type}`)
+                    }else if( type == "static" ){
+                        console.log(`${symbol} is ${condition} ${price} type: ${type}`)
+                        telegram.sendAdminMessage(`${symbol} is ${condition} ${price} type: ${type}`)
+                        Ichimoku.find({ symbol }, (err, result) => {
+                            if(!result.length){
+                                let interval;
+                                if(type == "static"){
+                                    interval = "long"
+                                }else if(type == "dynamic"){
+                                    interval = "short"
+                                }
+                                kline.getBuffer(symbol).then(( { buffer } ) => {
+                                    Ichimoku.create({ symbol, condition: "below", element: "tenkansen", interval, type, buffer })
+                                })
                             }
-                            kline.getBuffer(symbol).then(( { buffer } ) => {
-                                Ichimoku.create({ symbol, condition: "below", element: "tenkansen", interval, type, buffer })
-                            })
-                        }
-                    })
-                }                           
+                        })
+                    }                           
+                }
             }
         }
+
         if(index == alarmsLength - 1){                
             setTimeout(() => {
                 // console.log("static")

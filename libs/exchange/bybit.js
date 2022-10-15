@@ -52,28 +52,26 @@ exports.getCandles = async (symbol, period, count) => {
     }
     try{
         let response = await fetch(`${baseUrl}/public/linear/kline?symbol=${symbol}&interval=${period}&from=${Math.round((Date.now() / 1000))  - ( 60 * index * count)}&limit=${count}`)
-        // let data =  await response.json();
-        console.log(response)
-        // let {ret_code, result} = data
-        // console.log(ret_code)
-        // if(ret_code == "0"){
-        //     result.forEach((candle, index) => {
-        //         let { open, close, high, low, start_at, volume, turnover } = candle;
-        //         sArray.push(start_at);
-        //         oArray.push(open)
-        //         cArray.push(close)
-        //         hArray.push(high)
-        //         lArray.push(low)
-        //         vArray.push(volume)
-        //         tArray.push(turnover)
-        //         if(index == result.length - 1){
+        let data =  await response.json();
+        let {ret_code, result} = data
+        if(ret_code == "0"){
+            result.forEach((candle, index) => {
+                let { open, close, high, low, start_at, volume, turnover } = candle;
+                sArray.push(start_at);
+                oArray.push(open)
+                cArray.push(close)
+                hArray.push(high)
+                lArray.push(low)
+                vArray.push(volume)
+                tArray.push(turnover)
+                if(index == result.length - 1){
                     
-        //         }
-        //     })
-        //     return { status: true, klines: { oArray, cArray, hArray, lArray, vArray, tArray, sArray} }
-        // }else{
-        //     return { status: false, message: "Request Error" }
-        // }
+                }
+            })
+            return { status: true, klines: { oArray, cArray, hArray, lArray, vArray, tArray, sArray} }
+        }else{
+            return { status: false, message: "Request Error" }
+        }
 
         
     }catch(err){
@@ -271,6 +269,7 @@ exports.getLocalKlines = async (symbol, period, count) => {
             console.log(key)
 
             this.addMissingKline(symbol, period, time)
+            return { status: false }
             // console.log(startTime)
             // console.log({ symbol, period, time })
             // KlineError.findOne({ symbol, period, time }).then(doc => {

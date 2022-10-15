@@ -25,6 +25,7 @@
     "mathjs": "^10.6.4",
     "moment": "^2.29.4",
     "mongoose": "^6.4.4",
+    "mongoose-cron": "^0.5.7",
     "morgan": "~1.9.1",
     "mosca": "^2.8.3",
     "node-cron": "^3.0.1",
