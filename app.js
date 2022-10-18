@@ -8,31 +8,14 @@ const exchange      = require('./libs/exchange/bybit')
 const { checkUser } = require('./middlewares/authMiddleware')
 require('dotenv').config()
 
-// exchange.fillDatabase();
+exchange.fillDatabase();
 global.saveKline = true; 
 // global.shouldTrade = false;
 // global.saveKline = false;
 
-
-
-
 mongoose.connect(`mongodb://${process.env.dbAddress}:${process.env.dbPort}/${process.env.dbName}?authSource=${process.env.dbAuthSource}`, { auth: {username: process.env.dbUserName, password: process.env.dbPassword}, useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log(`connected to mongodb`))
-    .catch(err => console.log(err));
-
-
-
-const { createClient }    = require('redis')
-let client = new createClient({
-  url: 'redis://localhost',
-  socket: {
-    port: process.env.redisPort
-  },
-  password: process.env.redisPassword
-})
-client.connect()
-
-
+  .then(() => console.log(`connected to mongodb`))
+  .catch(err => console.log(err));
 
 const symbolRouter   = require('./routes/symbolRouter')
 const alarmRouter    = require('./routes/alarmRouter')

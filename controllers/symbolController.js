@@ -69,8 +69,6 @@ exports.refresh = () => {
 }
 
 setTimeout(() => {
-
-
         // this.refresh();
         setTimeout(() => {
             // global.shouldTrade = true;

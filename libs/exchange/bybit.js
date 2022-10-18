@@ -52,6 +52,7 @@ exports.getCandles = async (symbol, period, count) => {
     }
     try{
         let response = await fetch(`${baseUrl}/public/linear/kline?symbol=${symbol}&interval=${period}&from=${Math.round((Date.now() / 1000))  - ( 60 * index * count)}&limit=${count}`)
+        console.log(response)
         let data =  await response.json();
         let {ret_code, result} = data
         if(ret_code == "0"){
@@ -198,6 +199,7 @@ exports.fillDatabase = async () => {
 exports.addMissingKline = async ( symbol, period, start ) => {
     try{
         let response = await axios.get(`${baseUrl}/public/linear/kline?symbol=${symbol}&interval=${period}&from=${start}&limit=1`)
+        console.log(response)
         let { data } = response;
         let {ret_code, result} = data
         

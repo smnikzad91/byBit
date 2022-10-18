@@ -8,30 +8,11 @@ const kline        = require('./../libs/analyses/kline')
 const Setting      = require('./../models/Setting')
 const {multiply, divide, format, pow, subtract, log, add, largerEq, smallerEq, smaller, fraction} = require('mathjs');
 
-exports.checkAlarm_ = async ()=>{
-
-    let alarms = await Alarm.find().lean()
-    let alarmsLength = alarms.length;
-
-    for (const alarm of alarms ){
-        let { symbol, price, condition, _id, isEnabled, shouldCall, shouldMessage, type } = await alarm
-        console.log(alarm)
-        let {lastPrice} = await bybit.getLastPrice(symbol)
-
-   }
-    
-
-}
-
-
 exports.checkAlarm = async () => {
     let alarms = await Alarm.find().lean()
     let alarmsLength = alarms.length;
     alarms.forEach(async (alarm, index) => {
-    // let index = 0;
-    // for(let alarm of alarms){
         let { symbol, price, condition, _id, isEnabled, shouldCall, shouldMessage, type } = await alarm
-        // console.log(alarm)
         let {lastPrice, status} = await bybit.getLastPrice(symbol)
         if(status){
             if(condition === "below"){
@@ -86,33 +67,21 @@ exports.checkAlarm = async () => {
                 }
             }
         }
-
         if(index == alarmsLength - 1){                
             setTimeout(() => {
-                // console.log("static")
                 this.checkAlarm();
             }, 300)
         }
     })
-    // }
 }
 
 setTimeout(() => {
-    // global.shouldTrade = true;
     // this.checkAlarm();
 }, 3000)
 
-
-
-
 exports.getTest = async (req, res) => {
-
     res.json({ status: true, message: "alarm test page" })
 }
-
-
-
-
 exports.getIndex = async (req, res) => {
     let alarms = await Alarm.find().select(['-createdAt', '-updatedAt', '-__v'])
     let ichimokus = await Ichimoku.find().select(['-createdAt', '-updatedAt', '-__v'])
@@ -120,10 +89,8 @@ exports.getIndex = async (req, res) => {
     res.render('alarm/index', { alarms, ichimokus, timeframes })
 }
 
-
 exports.postNew = async (req, res) => {
     let { alarmType, shouldCall, shouldMessage } = req.body;
-    // console.log(alarmType)
     if(alarmType == "static"){
         let { symbol, condition, price } = req.body;
         symbol = symbol.toUpperCase() + 'USDT'
@@ -132,7 +99,6 @@ exports.postNew = async (req, res) => {
         let { symbol, condition, ichimokuElement, timeframe } = req.body;
         symbol = symbol.toUpperCase() + 'USDT'
         let { buffer } = await kline.getBuffer(symbol)
-        // console.log(buffer)
         await Ichimoku.create({symbol, condition, element: ichimokuElement, interval: timeframe, type: "manual", buffer})
     }
     res.redirect('/alarms')
@@ -146,7 +112,7 @@ exports.getDeactive = async (req, res) => {
 
 exports.getActive = async (req, res) => {
     let { id } = req.params
-    let result = await Alarm.findByIdAndUpdate(id, { $set: { isEnabled: true } });
+    await Alarm.findByIdAndUpdate(id, { $set: { isEnabled: true } });
     res.redirect('/alarms')
 }
 
@@ -154,10 +120,10 @@ exports.getDelete = async (req, res) => {
     let { id, type } = req.params;
     if(type == "static"){
         if(id == "all"){
-            let result = await Alarm.deleteMany();
+            await Alarm.deleteMany();
             await Ichimoku.deleteMany();
         }else{
-            let result = await Alarm.findByIdAndDelete(id);
+            await Alarm.findByIdAndDelete(id);
         }
         res.redirect('/alarms')
     }else if(type == "ichimoku"){
